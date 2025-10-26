@@ -1,0 +1,44 @@
+{
+  "title": "Spacious 3BHK Apartment in Indiranagar, Bangalore",
+  "description": "Beautiful 3BHK apartment located in the heart of Indiranagar. Features modern amenities, excellent connectivity, and close proximity to schools, hospitals, and shopping centers. The apartment has been recently renovated with premium fittings and fixtures. Perfect for families looking for a comfortable living space in a prime location.",
+  "propertyType": "apartment",
+  "listingType": "sale",
+  "address": {
+    "fullAddress": "123 CMH Road, Indiranagar, Bangalore",
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "pincode": "560038",
+    "landmark": "Near Indiranagar Metro Station"
+  },
+  "specs": {
+    "carpetArea": 1450,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "balconies": 2,
+    "parking": {
+      "covered": 1,
+      "open": 0
+    },
+    "floor": 5,
+    "totalFloors": 12,
+    "propertyAge": "1-5",
+    "furnishing": "semi-furnished",
+    "possession": "immediate"
+  },
+  "amenities": [
+    "Gym",
+    "Swimming Pool",
+    "Power Backup",
+    "Lift",
+    "Security",
+    "Park",
+    "Club House",
+    "Covered Parking"
+  ],
+  "pricing": {
+    "expectedPrice": 12500000,
+    "priceNegotiable": true,
+    "maintenanceCharges": 4500
+  },
+  "images": []
+}
