@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import User, { IUser } from '../models/User.model';
+import User from '../models/User.model';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { sendVerificationEmail } from '../utils/email';
 import logger from '../utils/logger';
@@ -238,7 +238,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     
     // Generate tokens
     const payload = {
-      userId: user._id.toString(),
+      userId: String(user._id),
       email: user.email,
       role: user.role
     };
@@ -345,8 +345,8 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     }
     
     // Generate reset token (in production, use crypto.randomBytes)
-    const resetToken = generateOTP();
-    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    // const resetToken = generateOTP();
+    // const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     
     // Save reset token (we'll add this field to schema later)
     // user.resetPasswordToken = resetToken;
@@ -375,7 +375,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 // @route   POST /api/v1/auth/logout
 // @desc    Logout user
 // @access  Private
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (_req: Request, res: Response): Promise<void> => {
   try {
     // In a real app, you'd invalidate the token in Redis/database
     // For now, client will just delete the token

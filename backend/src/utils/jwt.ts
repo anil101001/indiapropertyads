@@ -10,6 +10,7 @@ export const generateAccessToken = (payload: JWTPayload): string => {
   const secret = process.env.JWT_SECRET || 'default-secret';
   const expiresIn = process.env.JWT_EXPIRES_IN || '15m';
   
+  // @ts-ignore - JWT expiresIn typing issue
   return jwt.sign(payload, secret, { expiresIn });
 };
 
@@ -17,6 +18,7 @@ export const generateRefreshToken = (payload: JWTPayload): string => {
   const secret = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
   const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   
+  // @ts-ignore - JWT expiresIn typing issue
   return jwt.sign(payload, secret, { expiresIn });
 };
 
