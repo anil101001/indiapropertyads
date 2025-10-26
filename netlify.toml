@@ -1,0 +1,36 @@
+# Netlify Configuration for India Property Ads
+
+[build]
+  # Build command
+  command = "npm run build"
+  
+  # Directory with the static content
+  publish = "dist"
+  
+  # Base directory (root of your repo)
+  base = "."
+
+# Redirect rules for SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Environment variables (add your own in Netlify dashboard)
+# [build.environment]
+#   NODE_VERSION = "18"
