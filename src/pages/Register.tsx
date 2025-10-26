@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Building2, User, Phone, ArrowRight, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Building2, User, Phone, ArrowRight, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,19 +23,50 @@ export default function Register() {
 
   const roles = [
     { id: 'buyer', label: 'Buyer/Renter', description: 'Looking for properties' },
-    { id: 'seller', label: 'Property Owner', description: 'List your property' },
+    { id: 'owner', label: 'Property Owner', description: 'List your property' },
     { id: 'agent', label: 'Real Estate Agent', description: 'Manage listings & earn commissions' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
+    // Validation
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match!');
       return;
     }
-    // TODO: Implement actual registration
-    console.log('Register:', formData);
-    navigate('/login');
+    
+    if (!formData.agreeTerms) {
+      setError('Please accept the terms and conditions');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await register({
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        role: formData.role as 'buyer' | 'owner' | 'agent',
+        profile: {
+          name: formData.name,
+        },
+      });
+
+      if (result.needsVerification) {
+        setSuccess(true);
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          navigate('/login', { state: { email: formData.email, message: 'Please check your email for verification code' } });
+        }, 3000);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,6 +88,22 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Success Message */}
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm">Registration successful! Check your email for verification. Redirecting to login...</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
             {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">I am a</label>
@@ -195,10 +247,25 @@ export default function Register() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition flex items-center justify-center gap-2 group"
+              disabled={loading || success}
+              className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition flex items-center justify-center gap-2 group disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              <span>Create Account</span>
-              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Creating account...</span>
+                </>
+              ) : success ? (
+                <>
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Account Created!</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
+                </>
+              )}
             </button>
           </form>
 
