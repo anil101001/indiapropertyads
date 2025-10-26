@@ -1,0 +1,13 @@
+{
+  "email": "test@example.com",
+  "password": "Test@1234",
+  "phone": "9876543210",
+  "role": "buyer",
+  "profile": {
+    "name": "Test User",
+    "location": {
+      "city": "Mumbai",
+      "state": "Maharashtra"
+    }
+  }
+}
