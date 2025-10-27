@@ -7,34 +7,50 @@ import {
   X,
   Sparkles,
   CheckCircle,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
+import { propertyService } from '../services/propertyService';
+import { useAuth } from '../context/AuthContext';
 
 export default function AddProperty() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     // Basic Info
     title: '',
     description: '',
-    type: 'residential',
-    category: 'apartment',
+    propertyType: 'apartment',
     listingType: 'sale',
     // Location
-    address: '',
+    fullAddress: '',
     city: '',
     state: '',
     pincode: '',
+    landmark: '',
     // Price & Features
-    price: '',
+    expectedPrice: '',
+    priceNegotiable: true,
+    maintenanceCharges: '',
+    securityDeposit: '',
     bedrooms: '2',
     bathrooms: '2',
-    area: '',
-    areaUnit: 'sqft',
-    parkingSpaces: '1',
+    balconies: '1',
+    carpetArea: '',
+    coveredParking: '1',
+    openParking: '0',
     furnishing: 'semi-furnished',
     floor: '',
     totalFloors: '',
+    propertyAge: '<1',
+    possession: 'immediate',
     // Amenities
     amenities: [] as string[],
   });
@@ -65,14 +81,58 @@ export default function AddProperty() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Simulate image upload - in production, upload to cloud storage
-      const newImages = Array.from(files).map((file) => URL.createObjectURL(file));
-      setImages([...images, ...newImages]);
+      const fileArray = Array.from(files);
+      
+      // Validate
+      if (images.length + fileArray.length > 10) {
+        setError('Maximum 10 images allowed');
+        return;
+      }
+
+      // Check file sizes
+      const oversized = fileArray.find(f => f.size > 5 * 1024 * 1024);
+      if (oversized) {
+        setError('Each image must be less than 5MB');
+        return;
+      }
+
+      // Add files
+      setImages([...images, ...fileArray]);
+      
+      // Create previews
+      const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
+      setImagePreviews([...imagePreviews, ...newPreviews]);
+      setError('');
     }
   };
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
+
+  const uploadImagesToS3 = async () => {
+    if (images.length === 0) {
+      setError('Please upload at least one image');
+      return false;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await propertyService.uploadImages(images);
+      if (response.success) {
+        setUploadedImages(response.data.images);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload images');
+      return false;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -91,8 +151,8 @@ export default function AddProperty() {
 
   // Simulate AI price suggestion based on input
   const calculateAISuggestion = () => {
-    const basePrice = parseInt(formData.area) * 8500; // ₹8,500 per sqft base
-    const suggested = basePrice * (formData.type === 'commercial' ? 1.3 : 1);
+    const basePrice = parseInt(formData.carpetArea) * 8500; // ₹8,500 per sqft base
+    const suggested = basePrice * (formData.propertyType === 'plot' ? 1.3 : 1);
     setAiSuggestions({
       suggestedPrice: suggested,
       priceRange: { min: suggested * 0.9, max: suggested * 1.1 },
@@ -105,12 +165,73 @@ export default function AddProperty() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Submit to backend
-    console.log('Property Data:', formData);
-    console.log('Images:', images);
-    navigate('/agent-dashboard');
+    
+    // Upload images first if not already uploaded
+    let imagesToUse = uploadedImages;
+    if (uploadedImages.length === 0 && images.length > 0) {
+      const uploaded = await uploadImagesToS3();
+      if (!uploaded) return;
+      imagesToUse = uploadedImages;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const propertyData = {
+        title: formData.title,
+        description: formData.description,
+        propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot',
+        listingType: formData.listingType as 'sale' | 'rent',
+        address: {
+          fullAddress: formData.fullAddress,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+          landmark: formData.landmark,
+        },
+        specs: {
+          carpetArea: Number(formData.carpetArea),
+          bedrooms: Number(formData.bedrooms),
+          bathrooms: Number(formData.bathrooms),
+          balconies: Number(formData.balconies),
+          parking: {
+            covered: Number(formData.coveredParking),
+            open: Number(formData.openParking),
+          },
+          floor: formData.floor ? Number(formData.floor) : undefined,
+          totalFloors: formData.totalFloors ? Number(formData.totalFloors) : undefined,
+          propertyAge: formData.propertyAge as '<1' | '1-5' | '5-10' | '10+',
+          furnishing: formData.furnishing as 'unfurnished' | 'semi-furnished' | 'fully-furnished',
+          possession: formData.possession as 'immediate' | '1-month' | '3-months' | 'under-construction',
+        },
+        pricing: {
+          expectedPrice: Number(formData.expectedPrice),
+          priceNegotiable: formData.priceNegotiable,
+          maintenanceCharges: formData.maintenanceCharges ? Number(formData.maintenanceCharges) : undefined,
+          securityDeposit: formData.securityDeposit ? Number(formData.securityDeposit) : undefined,
+        },
+        amenities: formData.amenities,
+        images: imagesToUse,
+      };
+
+      const response = await propertyService.createProperty(propertyData);
+      
+      if (response.success) {
+        // Navigate based on user role
+        if (user?.role === 'agent') {
+          navigate('/agent-dashboard');
+        } else {
+          navigate('/properties');
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create property');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const steps = [
