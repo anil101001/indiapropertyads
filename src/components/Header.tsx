@@ -1,11 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3 } from 'lucide-react';
+import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3, User, LogOut, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await logout();
+    setShowUserMenu(false);
+  };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -86,26 +94,83 @@ export default function Header() {
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/add-property"
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-medium"
-            >
-              + List Property
-            </Link>
-            <Link
-              to="/login"
-              className="flex items-center space-x-1 text-gray-700 hover:text-primary-600"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Login</span>
-            </Link>
-            <Link
-              to="/register"
-              className="flex items-center space-x-1 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>Register</span>
-            </Link>
+            {isAuthenticated && (user?.role === 'owner' || user?.role === 'agent') && (
+              <Link
+                to="/add-property"
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-medium"
+              >
+                + List Property
+              </Link>
+            )}
+            
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">{user?.name}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
+                    <div className="px-4 py-2 border-b">
+                      <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                      <span className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-full mt-1 inline-block capitalize">
+                        {user?.role}
+                      </span>
+                    </div>
+                    {user?.role === 'agent' && (
+                      <Link
+                        to="/agent-dashboard"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <LayoutDashboard className="inline h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    )}
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/admin-dashboard"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Shield className="inline h-4 w-4 mr-2" />
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="inline h-4 w-4 mr-2" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center space-x-1 text-gray-700 hover:text-primary-600"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  to="/register"
+                  className="flex items-center space-x-1 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Register</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -143,19 +208,49 @@ export default function Header() {
               <Link to="/contact" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
                 Contact
               </Link>
-              <Link
-                to="/add-property"
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg text-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                + List Property
-              </Link>
-              <Link to="/login" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
-                Login
-              </Link>
-              <Link to="/register" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
-                Register
-              </Link>
+              {isAuthenticated && (user?.role === 'owner' || user?.role === 'agent') && (
+                <Link
+                  to="/add-property"
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg text-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  + List Property
+                </Link>
+              )}
+              
+              {isAuthenticated ? (
+                <>
+                  <div className="px-4 py-2 bg-gray-100 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                  {user?.role === 'agent' && (
+                    <Link to="/agent-dashboard" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
+                      Agent Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'admin' && (
+                    <Link to="/admin-dashboard" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { handleLogout(); setIsMenuOpen(false); }}
+                    className="text-red-600 hover:text-red-700 text-left w-full"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
+                    Login
+                  </Link>
+                  <Link to="/register" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
+                    Register
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
