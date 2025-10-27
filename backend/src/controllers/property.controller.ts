@@ -23,7 +23,7 @@ export const createProperty = async (req: AuthRequest, res: Response): Promise<v
     
     const property = await Property.create(propertyData);
     
-    logger.info(`Property created: ${property._id} by ${req.user?.email}`);
+    logger.info(`Property created: ${property._id} by ${req.user?.email} with status: ${property.status}`);
     
     res.status(201).json({
       success: true,
@@ -72,14 +72,19 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       sort = '-publishedAt'
     } = req.query;
     
+    // Debug logging
+    logger.info(`🔍 User info: ${JSON.stringify(req.user)} | Requested status: ${status}`);
+    
     // Build query
     const query: any = {};
     
     // Only show approved properties to public (unless owner/admin)
     if (!req.user || req.user.role === 'buyer') {
       query.status = 'approved';
+      logger.info('⚠️ No authenticated user or buyer role - defaulting to approved');
     } else if (status) {
       query.status = status;
+      logger.info(`✅ Authenticated ${req.user.role} - using status: ${status}`);
     }
     
     if (city) query['address.city'] = new RegExp(city as string, 'i');
@@ -99,6 +104,9 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
     
+    // Log query for debugging
+    logger.info(`Fetching properties with query: ${JSON.stringify(query)}`);
+    
     // Execute query
     const properties = await Property.find(query)
       .populate('owner', 'profile.name email phone role')
@@ -109,6 +117,8 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     
     // Get total count
     const total = await Property.countDocuments(query);
+    
+    logger.info(`Found ${total} properties matching query`);
     
     res.json({
       success: true,

@@ -60,9 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Redirect based on role
         if (response.data.user.role === 'admin') {
-          navigate('/admin/dashboard');
+          navigate('/admin-dashboard');
         } else if (response.data.user.role === 'agent') {
-          navigate('/agent/dashboard');
+          navigate('/agent-dashboard');
         } else {
           navigate('/');
         }

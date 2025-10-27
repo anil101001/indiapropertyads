@@ -1,0 +1,14 @@
+{
+  "email": "admin@indiapropertyads.com",
+  "password": "Admin@123",
+  "phone": "9999999999",
+  "role": "admin",
+  "profile": {
+    "name": "Admin User",
+    "location": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400001"
+    }
+  }
+}

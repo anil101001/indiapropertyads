@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { propertyService, Property } from '../services/propertyService';
+import { useAuth } from '../context/AuthContext';
 
 // Format price in Indian format
 const formatPrice = (price: number) => {
@@ -13,6 +14,7 @@ const formatPrice = (price: number) => {
 };
 
 export default function PropertyListing() {
+  const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,12 +40,13 @@ export default function PropertyListing() {
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms]);
+  }, [pagination.page, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, user?.role]);
 
   const fetchProperties = async () => {
     setLoading(true);
     setError('');
     try {
+      // Only show approved properties on public listing
       const response = await propertyService.getProperties({
         page: pagination.page,
         limit: pagination.limit,
@@ -53,7 +56,7 @@ export default function PropertyListing() {
         minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
         maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
         bedrooms: filters.bedrooms ? Number(filters.bedrooms) : undefined,
-        status: 'approved', // Only show approved properties
+        status: 'approved', // Only approved properties
         sort: '-publishedAt', // Latest first
       });
 

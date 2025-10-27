@@ -7,10 +7,13 @@ import PropertyListing from './pages/PropertyListing';
 import PropertyDetail from './pages/PropertyDetail';
 import AgentDashboard from './pages/AgentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminPendingProperties from './pages/AdminPendingProperties';
 import AdminReports from './pages/AdminReports';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AddProperty from './pages/AddProperty';
+import EditProperty from './pages/EditProperty';
+import MyProperties from './pages/MyProperties';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
@@ -35,6 +38,22 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="my-properties" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'agent']}>
+                  <MyProperties />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="property/:id/edit" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'agent']}>
+                  <EditProperty />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Protected Routes - Agent */}
             <Route 
@@ -52,6 +71,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin-pending-properties" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminPendingProperties />
                 </ProtectedRoute>
               } 
             />

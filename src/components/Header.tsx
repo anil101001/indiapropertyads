@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3, User, LogOut, ChevronDown } from 'lucide-react';
+import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3, User, LogOut, ChevronDown, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -123,6 +123,16 @@ export default function Header() {
                         {user?.role}
                       </span>
                     </div>
+                    {(user?.role === 'owner' || user?.role === 'agent') && (
+                      <Link
+                        to="/my-properties"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Home className="inline h-4 w-4 mr-2" />
+                        My Properties
+                      </Link>
+                    )}
                     {user?.role === 'agent' && (
                       <Link
                         to="/agent-dashboard"
@@ -134,14 +144,24 @@ export default function Header() {
                       </Link>
                     )}
                     {user?.role === 'admin' && (
-                      <Link
-                        to="/admin-dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        <Shield className="inline h-4 w-4 mr-2" />
-                        Admin Panel
-                      </Link>
+                      <>
+                        <Link
+                          to="/admin-dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Shield className="inline h-4 w-4 mr-2" />
+                          Admin Panel
+                        </Link>
+                        <Link
+                          to="/admin-pending-properties"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Clock className="inline h-4 w-4 mr-2" />
+                          Pending Properties
+                        </Link>
+                      </>
                     )}
                     <button
                       onClick={handleLogout}

@@ -46,6 +46,35 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
+// Optional authentication - doesn't fail if no token, but attaches user if valid token exists
+export const optionalAuthenticate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // No token provided - continue without user
+      next();
+      return;
+    }
+    
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    const payload = verifyAccessToken(token);
+    
+    if (payload) {
+      // Valid token - attach user to request
+      req.user = payload;
+    }
+    
+    // Continue regardless of token validity
+    next();
+    
+  } catch (error) {
+    // Token verification failed - continue without user
+    next();
+  }
+};
+
 // Check user role
 export const authorize = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {

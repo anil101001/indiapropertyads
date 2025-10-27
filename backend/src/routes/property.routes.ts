@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, authorize } from '../middleware/auth.middleware';
+import { authenticate, authorize, optionalAuthenticate } from '../middleware/auth.middleware';
 import {
   createProperty,
   getProperties,
@@ -13,8 +13,8 @@ import {
 
 const router = Router();
 
-// Public routes
-router.get('/', getProperties);
+// Public routes (with optional auth to allow filtering by status for admins)
+router.get('/', optionalAuthenticate, getProperties);
 router.get('/:id', getPropertyById);
 
 // Protected routes - require authentication
