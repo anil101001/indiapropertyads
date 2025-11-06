@@ -2,39 +2,55 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
-  IndianRupee,
   Upload,
   X,
-  Sparkles,
+  IndianRupee,
   CheckCircle,
+  AlertCircle,
+  Sparkles,
 } from 'lucide-react';
+import { propertyService } from '../services/propertyService';
+import { useAuth } from '../context/AuthContext';
 
 export default function AddProperty() {
   const navigate = useNavigate();
+  const { } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<any[]>([]);
+  const [, setUploading] = useState(false);
+  const [, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     // Basic Info
     title: '',
     description: '',
-    type: 'residential',
-    category: 'apartment',
+    propertyType: 'apartment',
     listingType: 'sale',
     // Location
-    address: '',
+    fullAddress: '',
     city: '',
     state: '',
     pincode: '',
+    landmark: '',
     // Price & Features
-    price: '',
+    expectedPrice: '',
+    priceNegotiable: true,
+    maintenanceCharges: '',
+    securityDeposit: '',
     bedrooms: '2',
     bathrooms: '2',
-    area: '',
-    areaUnit: 'sqft',
-    parkingSpaces: '1',
+    balconies: '1',
+    carpetArea: '',
+    coveredParking: '1',
+    openParking: '0',
     furnishing: 'semi-furnished',
     floor: '',
     totalFloors: '',
+    propertyAge: '<1',
+    possession: 'immediate',
     // Amenities
     amenities: [] as string[],
   });
@@ -65,14 +81,59 @@ export default function AddProperty() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Simulate image upload - in production, upload to cloud storage
-      const newImages = Array.from(files).map((file) => URL.createObjectURL(file));
-      setImages([...images, ...newImages]);
+      const fileArray = Array.from(files);
+      
+      // Validate
+      if (images.length + fileArray.length > 10) {
+        setError('Maximum 10 images allowed');
+        return;
+      }
+
+      // Check file sizes
+      const oversized = fileArray.find(f => f.size > 5 * 1024 * 1024);
+      if (oversized) {
+        setError('Each image must be less than 5MB');
+        return;
+      }
+
+      // Add files
+      setImages([...images, ...fileArray]);
+      
+      // Create previews
+      const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
+      setImagePreviews([...imagePreviews, ...newPreviews]);
+      setError('');
     }
   };
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
+
+  const uploadImagesToS3 = async () => {
+    if (images.length === 0) {
+      setError('Please upload at least one image');
+      return null;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await propertyService.uploadImages(images);
+      if (response.success) {
+        console.log('📸 Images uploaded:', response.data.images);
+        setUploadedImages(response.data.images);
+        return response.data.images; // Return the images directly
+      }
+      return null;
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload images');
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -90,9 +151,76 @@ export default function AddProperty() {
   };
 
   // Simulate AI price suggestion based on input
+  // Step-specific validation
+  const validateStep = (step: number): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (step === 1) {
+      // Basic Info validation
+      if (!formData.title || formData.title.length < 10) {
+        errors.title = 'Title must be at least 10 characters';
+      }
+      if (!formData.description || formData.description.length < 50) {
+        errors.description = 'Description must be at least 50 characters';
+      }
+    }
+
+    if (step === 2) {
+      // Location validation
+      if (!formData.fullAddress) {
+        errors.fullAddress = 'Full address is required';
+      }
+      if (!formData.city) {
+        errors.city = 'City is required';
+      }
+      if (!formData.state) {
+        errors.state = 'State is required';
+      }
+      if (!formData.pincode || !/^\d{6}$/.test(formData.pincode)) {
+        errors.pincode = 'Pincode must be 6 digits';
+      }
+    }
+
+    if (step === 3) {
+      // Price & Details validation
+      const price = Number(formData.expectedPrice);
+      if (!formData.expectedPrice || price < 10000) {
+        errors.expectedPrice = 'Price must be at least ₹10,000';
+      }
+
+      const area = Number(formData.carpetArea);
+      if (!formData.carpetArea || area < 100) {
+        errors.carpetArea = 'Carpet area must be at least 100 sqft';
+      }
+    }
+
+    if (step === 4) {
+      // Image validation
+      if (images.length === 0 && uploadedImages.length === 0) {
+        errors.images = 'Please upload at least one image';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Full form validation
+  const validateForm = (): boolean => {
+    return validateStep(1) && validateStep(2) && validateStep(3) && validateStep(4);
+  };
+
+  // Handle next button click
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(currentStep + 1);
+      setValidationErrors({}); // Clear errors when moving to next step
+    }
+  };
+
   const calculateAISuggestion = () => {
-    const basePrice = parseInt(formData.area) * 8500; // ₹8,500 per sqft base
-    const suggested = basePrice * (formData.type === 'commercial' ? 1.3 : 1);
+    const basePrice = parseInt(formData.carpetArea) * 8500; // ₹8,500 per sqft base
+    const suggested = basePrice * (formData.propertyType === 'plot' ? 1.3 : 1);
     setAiSuggestions({
       suggestedPrice: suggested,
       priceRange: { min: suggested * 0.9, max: suggested * 1.1 },
@@ -105,12 +233,80 @@ export default function AddProperty() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Submit to backend
-    console.log('Property Data:', formData);
-    console.log('Images:', images);
-    navigate('/agent-dashboard');
+    
+    // Validate form
+    if (!validateForm()) {
+      setError('Please fix the errors before submitting');
+      return;
+    }
+    
+    // Upload images first if not already uploaded
+    let imagesToUse = uploadedImages;
+    if (uploadedImages.length === 0 && images.length > 0) {
+      const uploaded = await uploadImagesToS3();
+      if (!uploaded || uploaded.length === 0) {
+        setError('Failed to upload images');
+        return;
+      }
+      imagesToUse = uploaded; // Use the returned images directly
+    }
+    
+    console.log('🏠 Creating property with images:', imagesToUse);
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const propertyData = {
+        title: formData.title,
+        description: formData.description,
+        propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot',
+        listingType: formData.listingType as 'sale' | 'rent',
+        address: {
+          fullAddress: formData.fullAddress,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+          landmark: formData.landmark,
+        },
+        specs: {
+          carpetArea: Number(formData.carpetArea),
+          bedrooms: Number(formData.bedrooms),
+          bathrooms: Number(formData.bathrooms),
+          balconies: Number(formData.balconies),
+          parking: {
+            covered: Number(formData.coveredParking),
+            open: Number(formData.openParking),
+          },
+          floor: formData.floor ? Number(formData.floor) : undefined,
+          totalFloors: formData.totalFloors ? Number(formData.totalFloors) : undefined,
+          propertyAge: formData.propertyAge as '<1' | '1-5' | '5-10' | '10+',
+          furnishing: formData.furnishing as 'unfurnished' | 'semi-furnished' | 'fully-furnished',
+          possession: formData.possession as 'immediate' | '1-month' | '3-months' | 'under-construction',
+        },
+        pricing: {
+          expectedPrice: Number(formData.expectedPrice),
+          priceNegotiable: formData.priceNegotiable,
+          maintenanceCharges: formData.maintenanceCharges ? Number(formData.maintenanceCharges) : undefined,
+          securityDeposit: formData.securityDeposit ? Number(formData.securityDeposit) : undefined,
+        },
+        amenities: formData.amenities,
+        images: imagesToUse,
+      };
+
+      const response = await propertyService.createProperty(propertyData);
+      
+      if (response.success) {
+        // Navigate to My Properties to see the newly created property
+        navigate('/my-properties');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create property');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const steps = [
@@ -164,6 +360,16 @@ export default function AddProperty() {
           </div>
         </div>
 
+        {/* General Error (backend errors only) */}
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {/* Step 1: Basic Info */}
           {currentStep === 1 && (
@@ -172,15 +378,26 @@ export default function AddProperty() {
 
               {/* Property Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Property Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Property Title *</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  placeholder="e.g., Spacious 3BHK Apartment in Bandra"
+                  onBlur={() => validateForm()}
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                    validationErrors.title 
+                      ? 'border-red-300 focus:border-red-500' 
+                      : 'border-gray-200 focus:border-primary-500'
+                  }`}
+                  placeholder="e.g., Spacious 3BHK Apartment in Bandra (min 10 characters)"
                 />
+                {validationErrors.title && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {validationErrors.title}
+                  </p>
+                )}
               </div>
 
               {/* Property Type & Category */}
@@ -188,8 +405,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
                   <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    value={formData.propertyType}
+                    onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="residential">Residential</option>
@@ -199,8 +416,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    value={formData.listingType}
+                    onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="apartment">Apartment</option>
@@ -244,15 +461,27 @@ export default function AddProperty() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
                 <textarea
                   required
                   rows={4}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  placeholder="Describe your property..."
+                  onBlur={() => validateForm()}
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                    validationErrors.description 
+                      ? 'border-red-300 focus:border-red-500' 
+                      : 'border-gray-200 focus:border-primary-500'
+                  }`}
+                  placeholder="Describe your property... (min 50 characters)"
                 ></textarea>
+                <p className="text-xs text-gray-500 mt-1">{formData.description.length}/50 characters</p>
+                {validationErrors.description && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {validationErrors.description}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -263,15 +492,26 @@ export default function AddProperty() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Property Location</h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Address *</label>
                 <input
                   type="text"
                   required
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  value={formData.fullAddress}
+                  onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
+                  onBlur={() => validateStep(2)}
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                    validationErrors.fullAddress 
+                      ? 'border-red-300 focus:border-red-500' 
+                      : 'border-gray-200 focus:border-primary-500'
+                  }`}
                   placeholder="Building name, street, landmark"
                 />
+                {validationErrors.fullAddress && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {validationErrors.fullAddress}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -331,19 +571,29 @@ export default function AddProperty() {
 
               {/* Price with AI Suggestion */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹) *</label>
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="number"
                     required
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    onBlur={calculateAISuggestion}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                    placeholder="12500000"
+                    value={formData.expectedPrice}
+                    onChange={(e) => setFormData({ ...formData, expectedPrice: e.target.value })}
+                    onBlur={() => { calculateAISuggestion(); validateStep(3); }}
+                    className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none ${
+                      validationErrors.expectedPrice 
+                        ? 'border-red-300 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-primary-500'
+                    }`}
+                    placeholder="12500000 (min ₹10,000)"
                   />
                 </div>
+                {validationErrors.expectedPrice && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {validationErrors.expectedPrice}
+                  </p>
+                )}
                 {aiSuggestions.suggestedPrice > 0 && (
                   <div className="mt-3 p-4 bg-primary-50 rounded-lg">
                     <div className="flex items-start gap-2">
@@ -377,21 +627,32 @@ export default function AddProperty() {
               {/* Area */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Built-up Area</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Carpet Area *</label>
                   <input
                     type="number"
                     required
-                    value={formData.area}
-                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                    placeholder="1450"
+                    value={formData.carpetArea}
+                    onChange={(e) => setFormData({ ...formData, carpetArea: e.target.value })}
+                    onBlur={() => validateStep(3)}
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none ${
+                      validationErrors.carpetArea 
+                        ? 'border-red-300 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-primary-500'
+                    }`}
+                    placeholder="1450 (min 100 sqft)"
                   />
+                  {validationErrors.carpetArea && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      {validationErrors.carpetArea}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                   <select
-                    value={formData.areaUnit}
-                    onChange={(e) => setFormData({ ...formData, areaUnit: e.target.value })}
+                    value="sqft"
+                    onChange={(e) => console.log('Area unit:', e.target.value)}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="sqft">Sq.Ft</option>
@@ -433,8 +694,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Parking</label>
                   <select
-                    value={formData.parkingSpaces}
-                    onChange={(e) => setFormData({ ...formData, parkingSpaces: e.target.value })}
+                    value={formData.coveredParking}
+                    onChange={(e) => setFormData({ ...formData, coveredParking: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     {[0, 1, 2, 3].map((num) => (
@@ -498,10 +759,12 @@ export default function AddProperty() {
           {/* Step 4: Photos */}
           {currentStep === 4 && (
             <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Upload Photos</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Upload Photos *</h2>
 
               {/* Image Upload */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-500 transition">
+              <div className={`border-2 border-dashed rounded-lg p-8 text-center hover:border-primary-500 transition ${
+                validationErrors.images ? 'border-red-300' : 'border-gray-300'
+              }`}>
                 <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600 mb-2">Drag and drop images or click to browse</p>
                 <p className="text-sm text-gray-500 mb-4">PNG, JPG up to 10MB each</p>
@@ -518,6 +781,14 @@ export default function AddProperty() {
                   />
                 </label>
               </div>
+              
+              {/* Validation Error */}
+              {validationErrors.images && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {validationErrors.images}
+                </p>
+              )}
 
               {/* Image Preview */}
               {images.length > 0 && (
@@ -527,7 +798,7 @@ export default function AddProperty() {
                     {images.map((img, idx) => (
                       <div key={idx} className="relative group">
                         <img
-                          src={img}
+                          src={typeof img === 'string' ? img : URL.createObjectURL(img)}
                           alt={`Property ${idx + 1}`}
                           className="w-full h-32 object-cover rounded-lg"
                         />
@@ -577,7 +848,7 @@ export default function AddProperty() {
             {currentStep < 4 ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={handleNext}
                 className="ml-auto px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
               >
                 Next

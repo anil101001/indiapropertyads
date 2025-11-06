@@ -1,0 +1,4 @@
+Bug ID,Title,Priority,Severity,Module,Related Test Case ID,Status,Steps to Reproduce,Expected Result,Actual Result,Browser,OS,Device,Reported By,Reported Date,Fixed Date,Notes
+BUG-001,Sample Bug - Delete this row,High,Critical,User Registration,TC-REG-001,Open,"1. Step one
+2. Step two
+3. Step three",User should be created successfully,Error message appears,Chrome,Windows,Desktop,Tester Name,2025-11-03,,Sample bug for reference

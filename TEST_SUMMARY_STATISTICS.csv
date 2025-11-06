@@ -1,0 +1,13 @@
+Module,Total Test Cases,Passed,Failed,Blocked,Not Executed,Completion %
+User Registration,5,0,0,0,5,0%
+User Authentication,6,0,0,0,6,0%
+Property Listing - Owner,6,0,0,0,6,0%
+Property Listing - Agent,4,0,0,0,4,0%
+Admin Approval Workflow,7,0,0,0,7,0%
+Public Property Viewing,9,0,0,0,9,0%
+Cross-Role Verification,5,0,0,0,5,0%
+Image Upload & S3,7,0,0,0,7,0%
+Error Handling,6,0,0,0,6,0%
+UI/UX - Responsiveness,7,0,0,0,7,0%
+Performance,6,0,0,0,6,0%
+TOTAL,68,0,0,0,68,0%

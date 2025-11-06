@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: role || 'buyer',
       profile: {
         name: profile.name,
-        location: profile.location
+        ...(profile.location && { location: profile.location })
       },
       verification: {
         emailOTP,
@@ -75,6 +75,35 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     
   } catch (error: any) {
     logger.error('Register error:', error);
+    
+    // Handle validation errors from Mongoose
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err: any) => err.message);
+      res.status(400).json({
+        success: false,
+        message: messages[0] || 'Validation failed',
+        errors: messages
+      });
+      return;
+    }
+    
+    // Handle duplicate key errors (unique constraints)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      const message = field === 'email' 
+        ? 'Email already registered' 
+        : field === 'phone'
+        ? 'Phone number already registered'
+        : 'This value is already in use';
+      
+      res.status(400).json({
+        success: false,
+        message
+      });
+      return;
+    }
+    
+    // Generic server error
     res.status(500).json({
       success: false,
       message: 'Registration failed. Please try again.',

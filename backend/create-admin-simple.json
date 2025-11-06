@@ -1,0 +1,14 @@
+{
+  "email": "admin@test.com",
+  "password": "admin123",
+  "phone": "8888888888",
+  "role": "admin",
+  "profile": {
+    "name": "Admin",
+    "location": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400001"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+Test Case ID,Module,Test Case Description,Test Steps,Expected Result,Status,Notes,Priority
+TC-REG-001,User Registration,Register as Property Owner,"1. Navigate to /register
+2. Fill form with Owner role
+3. Submit",User created redirected to login/dashboard,Not Executed,,High
+TC-REG-002,User Registration,Register as Real Estate Agent,"1. Navigate to /register
+2. Fill form with Agent role
+3. Submit",User created redirected to login/dashboard,Not Executed,,High
+TC-REG-003,User Registration,Register as Property Buyer,"1. Navigate to /register
+2. Fill form with Buyer role
+3. Submit",User created redirected to login/dashboard,Not Executed,,High
+TC-REG-004,User Registration,Duplicate Email Registration,1. Try registering with existing email,Error: Email already exists,Not Executed,,Medium
+TC-REG-005,User Registration,Registration with Missing Fields,1. Submit form with empty required fields,Validation errors displayed,Not Executed,,Medium
+TC-AUTH-001,User Authentication,Login as Owner,"1. Navigate to /login
+2. Enter owner credentials
+3. Submit",Redirected to owner dashboard,Not Executed,,High
+TC-AUTH-002,User Authentication,Login as Agent,"1. Navigate to /login
+2. Enter agent credentials
+3. Submit",Redirected to agent dashboard,Not Executed,,High
+TC-AUTH-003,User Authentication,Login as Buyer,"1. Navigate to /login
+2. Enter buyer credentials
+3. Submit",Redirected to home/properties,Not Executed,,High
+TC-AUTH-004,User Authentication,Login as Admin,"1. Navigate to /login
+2. Enter admin credentials
+3. Submit",Redirected to admin dashboard,Not Executed,,High
+TC-AUTH-005,User Authentication,Login with Invalid Credentials,"1. Enter wrong password
+2. Submit",Error: Invalid credentials,Not Executed,,Medium
+TC-AUTH-006,User Authentication,Logout Functionality,"1. Click profile dropdown
+2. Click Logout",Redirected to home session cleared,Not Executed,,Medium
+TC-PROP-OWN-001,Property Listing - Owner,Access Add Property Page,"1. Login as owner
+2. Navigate to /add-property",Form displayed with all fields,Not Executed,,High
+TC-PROP-OWN-002,Property Listing - Owner,Submit Property for Approval,"1. Fill complete property form
+2. Upload images
+3. Submit",Success message property status: Pending Approval,Not Executed,,High
+TC-PROP-OWN-003,Property Listing - Owner,View My Properties,1. Navigate to My Properties,List of owner's properties displayed,Not Executed,,High
+TC-PROP-OWN-004,Property Listing - Owner,Property Status Display,1. Check property in My Properties,Status shows Pending Approval,Not Executed,,High
+TC-PROP-OWN-005,Property Listing - Owner,Submit Property without Required Fields,"1. Leave title empty
+2. Submit",Validation error displayed,Not Executed,,Medium
+TC-PROP-OWN-006,Property Listing - Owner,Property with All Amenities,"1. Fill form
+2. Select multiple amenities
+3. Submit",Property saved with all amenities,Not Executed,,Low
+TC-PROP-AGT-001,Property Listing - Agent,Agent List Property,"1. Login as agent
+2. Fill property form
+3. Submit",Property immediately approved,Not Executed,,High
+TC-PROP-AGT-002,Property Listing - Agent,Verify Auto-Approval Status,1. Check My Properties,Status shows Approved,Not Executed,,High
+TC-PROP-AGT-003,Property Listing - Agent,Agent Property Public Visibility,1. Navigate to public properties page,Agent's property visible immediately,Not Executed,,High
+TC-PROP-AGT-004,Property Listing - Agent,Multiple Properties by Agent,"1. Create 3 properties
+2. Check all statuses",All show Approved,Not Executed,,Medium
+TC-ADMIN-001,Admin Approval Workflow,Access Admin Dashboard,"1. Login as admin
+2. Check dashboard",Dashboard with stats displayed,Not Executed,,High
+TC-ADMIN-002,Admin Approval Workflow,View Pending Properties,1. Navigate to Pending Properties,List of pending properties shown,Not Executed,,High
+TC-ADMIN-003,Admin Approval Workflow,View Property Details,1. Click on pending property,Full details images owner info displayed,Not Executed,,High
+TC-ADMIN-004,Admin Approval Workflow,Approve Property,"1. Click Approve button
+2. Confirm",Success message property removed from pending,Not Executed,,High
+TC-ADMIN-005,Admin Approval Workflow,Reject Property,"1. Click Reject button
+2. Enter reason
+3. Confirm",Property status: Rejected with reason,Not Executed,,High
+TC-ADMIN-006,Admin Approval Workflow,Dashboard Statistics,1. Check dashboard stats,Total properties pending approved users count,Not Executed,,Medium
+TC-ADMIN-007,Admin Approval Workflow,Admin View All Properties,1. Navigate to all properties,Can see all properties (all statuses),Not Executed,,Medium
+TC-VIEW-001,Public Property Viewing,Guest View Properties,"1. Visit site without login
+2. Go to Properties page",Only approved properties visible,Not Executed,,High
+TC-VIEW-002,Public Property Viewing,Buyer View Properties,"1. Login as buyer
+2. Browse properties",All approved properties displayed,Not Executed,,High
+TC-VIEW-003,Public Property Viewing,Filter by City,1. Select city filter,Properties filtered correctly,Not Executed,,Medium
+TC-VIEW-004,Public Property Viewing,Filter by Property Type,1. Select type filter,Properties filtered correctly,Not Executed,,Medium
+TC-VIEW-005,Public Property Viewing,Filter by Price Range,"1. Set price range
+2. Apply filter",Properties within range displayed,Not Executed,,Medium
+TC-VIEW-006,Public Property Viewing,View Property Details,1. Click on property card,Full details gallery owner contact map,Not Executed,,High
+TC-VIEW-007,Public Property Viewing,Property Image Gallery,"1. Open property details
+2. Click images",Gallery with navigation works,Not Executed,,Medium
+TC-VIEW-008,Public Property Viewing,Pending Properties Not Visible,1. Browse as guest/buyer,Pending properties NOT shown,Not Executed,,High
+TC-VIEW-009,Public Property Viewing,Rejected Properties Not Visible,1. Browse as guest/buyer,Rejected properties NOT shown,Not Executed,,High
+TC-CROSS-001,Cross-Role Verification,Owner Sees Approved Property,"1. Login as owner
+2. Check My Properties",Status changed to Approved,Not Executed,,High
+TC-CROSS-002,Cross-Role Verification,Owner Property Public Visibility,1. Navigate to public page,Owner's approved property visible,Not Executed,,High
+TC-CROSS-003,Cross-Role Verification,Agent Dashboard Stats,"1. Login as agent
+2. Check dashboard",Property count views displayed,Not Executed,,Medium
+TC-CROSS-004,Cross-Role Verification,Buyer Cannot Access Admin,"1. Login as buyer
+2. Try /admin-dashboard",Access denied / redirected,Not Executed,,High
+TC-CROSS-005,Cross-Role Verification,Owner Cannot Access Admin,"1. Login as owner
+2. Try /admin-dashboard",Access denied / redirected,Not Executed,,High
+TC-IMG-001,Image Upload & S3,Upload Single Image,"1. Add property
+2. Upload 1 image
+3. Submit",Image uploads successfully,Not Executed,,High
+TC-IMG-002,Image Upload & S3,Upload Multiple Images,"1. Add property
+2. Upload 3-5 images
+3. Submit",All images upload successfully,Not Executed,,High
+TC-IMG-003,Image Upload & S3,Image Preview,"1. Upload images
+2. Check preview",Preview displays correctly,Not Executed,,Medium
+TC-IMG-004,Image Upload & S3,S3 URL Verification,"1. Submit property
+2. Check image URLs",URLs start with S3 domain,Not Executed,,High
+TC-IMG-005,Image Upload & S3,Image Load from S3,"1. View property details
+2. Check images",Images load from S3 correctly,Not Executed,,High
+TC-IMG-006,Image Upload & S3,Large Image Upload,1. Upload image >5MB,Handled correctly (accepted or error),Not Executed,,Low
+TC-IMG-007,Image Upload & S3,Invalid File Type,1. Try uploading PDF/TXT,Error: Invalid file type,Not Executed,,Medium
+TC-ERR-001,Error Handling,Invalid Login Credentials,1. Enter wrong password,Error message displayed,Not Executed,,High
+TC-ERR-002,Error Handling,Network Error Handling,"1. Disconnect internet
+2. Try action",Friendly error message,Not Executed,,Medium
+TC-ERR-003,Error Handling,Backend Down/Cold Start,1. First API call (cold backend),Loading indicator shown,Not Executed,,High
+TC-ERR-004,Error Handling,Form Validation Errors,1. Submit incomplete form,Field-specific errors shown,Not Executed,,High
+TC-ERR-005,Error Handling,404 Page,1. Navigate to invalid URL,404 page displayed,Not Executed,,Low
+TC-ERR-006,Error Handling,Session Expiry,"1. Wait for session timeout
+2. Try action",Redirected to login,Not Executed,,Medium
+TC-UI-001,UI/UX - Responsiveness,Mobile Navigation,"1. Open on mobile
+2. Check hamburger menu",Menu works correctly,Not Executed,,High
+TC-UI-002,UI/UX - Responsiveness,Mobile Property Cards,1. View properties on mobile,Cards stack vertically,Not Executed,,High
+TC-UI-003,UI/UX - Responsiveness,Mobile Forms,"1. Open registration form
+2. Fill on mobile",Form usable and submits,Not Executed,,High
+TC-UI-004,UI/UX - Responsiveness,Mobile Property Details,1. Open property details,All sections responsive,Not Executed,,High
+TC-UI-005,UI/UX - Responsiveness,Tablet Responsiveness,1. View on tablet (768px),Layout adapts correctly,Not Executed,,Medium
+TC-UI-006,UI/UX - Responsiveness,Desktop Layout,1. View on desktop (1920px),Optimal layout and spacing,Not Executed,,Medium
+TC-UI-007,UI/UX - Responsiveness,Image Gallery Mobile,1. Open gallery on mobile,Swipe/navigation works,Not Executed,,Medium
+TC-PERF-001,Performance,Frontend First Load,"1. Clear cache
+2. Open homepage",Loads in <3 seconds,Not Executed,,Medium
+TC-PERF-002,Performance,Backend Cold Start,1. First API call (cold backend),Loading indicator eventual success,Not Executed,,High
+TC-PERF-003,Performance,Backend Warm State,1. Subsequent API calls,Fast response (<2 seconds),Not Executed,,Medium
+TC-PERF-004,Performance,Page Navigation Speed,1. Navigate between pages,Instant page transitions,Not Executed,,Medium
+TC-PERF-005,Performance,Image Loading,1. View property with images,Images load progressively,Not Executed,,Low
+TC-PERF-006,Performance,Large Property List,1. View 50+ properties,Smooth scrolling no lag,Not Executed,,Medium
