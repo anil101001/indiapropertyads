@@ -49,7 +49,7 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']
     },
     password: {
       type: String,
@@ -61,7 +61,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, 'Phone number is required'],
       unique: true,
-      match: [/^[6-9]\d{9}$/, 'Please provide a valid Indian phone number']
+      match: [/^[6-9]\d{9}$/, 'Phone number must be a valid 10-digit Indian number starting with 6-9']
     },
     role: {
       type: String,
@@ -74,7 +74,8 @@ const UserSchema = new Schema<IUser>(
         required: [true, 'Name is required'],
         trim: true,
         minlength: [2, 'Name must be at least 2 characters'],
-        maxlength: [100, 'Name cannot exceed 100 characters']
+        maxlength: [100, 'Name cannot exceed 100 characters'],
+        match: [/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces']
       },
       avatar: String,
       location: {
@@ -156,6 +157,18 @@ UserSchema.pre('save', async function (next) {
   }
   
   try {
+    // Validate password strength (before hashing)
+    const password = this.password;
+    if (!/(?=.*[a-z])/.test(password)) {
+      throw new Error('Password must contain at least one lowercase letter');
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      throw new Error('Password must contain at least one uppercase letter');
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      throw new Error('Password must contain at least one number');
+    }
+    
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();

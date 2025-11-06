@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: role || 'buyer',
       profile: {
         name: profile.name,
-        location: profile.location
+        ...(profile.location && { location: profile.location })
       },
       verification: {
         emailOTP,

@@ -27,7 +27,8 @@ app.use(cors({
     : [
         process.env.FRONTEND_URL || 'http://localhost:3000',
         'https://indiapropertyads.netlify.app',
-        'https://india-property-ads.netlify.app'
+        'https://india-property-ads.netlify.app',
+        'https://indiapropertyads-azentiqai.netlify.app'
       ],
   credentials: true
 }));
