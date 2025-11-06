@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: RegisterRequest): Promise<{ needsVerification: boolean }> => {
     try {
+      console.log('AuthContext: register called with:', data);
       const response = await authService.register(data);
+      console.log('AuthContext: register response:', response);
       
       if (response.success) {
         // Registration successful, needs email verification
@@ -84,8 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return { needsVerification: false };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-      throw new Error(errorMessage);
+      console.error('AuthContext: register error:', error);
+      // Pass through the error message from API layer (already formatted)
+      throw error;
     }
   };
 

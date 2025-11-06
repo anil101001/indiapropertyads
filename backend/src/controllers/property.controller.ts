@@ -69,7 +69,9 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       status = 'approved',
       page = 1,
       limit = 20,
-      sort = '-publishedAt'
+      sort = '-publishedAt',
+      search,
+      q // Support both 'search' and 'q' parameters
     } = req.query;
     
     // Debug logging
@@ -85,6 +87,21 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     } else if (status) {
       query.status = status;
       logger.info(`✅ Authenticated ${req.user.role} - using status: ${status}`);
+    }
+    
+    // Text search across multiple fields (support both 'search' and 'q' parameters)
+    const searchTerm = (search || q) as string;
+    if (searchTerm && searchTerm.trim()) {
+      const searchRegex = new RegExp(searchTerm.trim(), 'i');
+      query.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { 'address.city': searchRegex },
+        { 'address.state': searchRegex },
+        { 'address.landmark': searchRegex },
+        { 'address.fullAddress': searchRegex }
+      ];
+      logger.info(`🔍 Text search: "${searchTerm}"`);
     }
     
     if (city) query['address.city'] = new RegExp(city as string, 'i');

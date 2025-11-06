@@ -68,9 +68,10 @@ export default function Login() {
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none transition"
+                  className="w-full pl-10 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none transition"
                   placeholder="your@email.com"
                 />
               </div>
@@ -84,6 +85,7 @@ export default function Login() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none transition"

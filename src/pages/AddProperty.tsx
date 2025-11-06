@@ -2,26 +2,25 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
-  IndianRupee,
   Upload,
   X,
-  Sparkles,
+  IndianRupee,
   CheckCircle,
-  Loader2,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { propertyService } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
 
 export default function AddProperty() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [, setUploading] = useState(false);
+  const [, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -406,8 +405,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
                   <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    value={formData.propertyType}
+                    onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="residential">Residential</option>
@@ -417,8 +416,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    value={formData.listingType}
+                    onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="apartment">Apartment</option>
@@ -652,8 +651,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                   <select
-                    value={formData.areaUnit}
-                    onChange={(e) => setFormData({ ...formData, areaUnit: e.target.value })}
+                    value="sqft"
+                    onChange={(e) => console.log('Area unit:', e.target.value)}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="sqft">Sq.Ft</option>
@@ -695,8 +694,8 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Parking</label>
                   <select
-                    value={formData.parkingSpaces}
-                    onChange={(e) => setFormData({ ...formData, parkingSpaces: e.target.value })}
+                    value={formData.coveredParking}
+                    onChange={(e) => setFormData({ ...formData, coveredParking: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     {[0, 1, 2, 3].map((num) => (
@@ -799,7 +798,7 @@ export default function AddProperty() {
                     {images.map((img, idx) => (
                       <div key={idx} className="relative group">
                         <img
-                          src={img}
+                          src={typeof img === 'string' ? img : URL.createObjectURL(img)}
                           alt={`Property ${idx + 1}`}
                           className="w-full h-32 object-cover rounded-lg"
                         />

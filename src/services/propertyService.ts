@@ -63,6 +63,7 @@ export interface Property {
 }
 
 export interface PropertyFilters {
+  search?: string;
   city?: string;
   propertyType?: string;
   listingType?: string;

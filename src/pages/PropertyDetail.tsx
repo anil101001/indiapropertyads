@@ -1,4 +1,4 @@
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   MapPin,
@@ -10,16 +10,12 @@ import {
   Phone,
   Mail,
   TrendingUp,
-  Shield,
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  Star,
   CheckCircle,
   Home,
   Car,
-  School,
-  ShoppingBag,
   Building2,
   Loader2,
   AlertCircle,
@@ -37,7 +33,6 @@ const formatPrice = (price: number) => {
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
