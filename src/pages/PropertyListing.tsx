@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle, X, ArrowUpDown } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { propertyService, Property } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
@@ -34,14 +34,36 @@ export default function PropertyListing() {
     maxPrice: '',
     bedrooms: '',
   });
+  const [sortBy, setSortBy] = useState('-publishedAt'); // Default: newest first
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchInput, setSearchInput] = useState(filters.search);
+
+  // Indian cities list (top 50 cities)
+  const indianCities = [
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad',
+    'Surat', 'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal',
+    'Visakhapatnam', 'Pimpri-Chinchwad', 'Patna', 'Vadodara', 'Ghaziabad', 'Ludhiana',
+    'Agra', 'Nashik', 'Faridabad', 'Meerut', 'Rajkot', 'Kalyan-Dombivali', 'Vasai-Virar',
+    'Varanasi', 'Srinagar', 'Aurangabad', 'Dhanbad', 'Amritsar', 'Navi Mumbai', 'Allahabad',
+    'Ranchi', 'Howrah', 'Coimbatore', 'Jabalpur', 'Gwalior', 'Vijayawada', 'Jodhpur',
+    'Madurai', 'Raipur', 'Kota', 'Chandigarh', 'Guwahati', 'Solapur', 'Hubli-Dharwad'
+  ].sort();
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchInput }));
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // Fetch properties from backend
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, user?.role]);
+  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, sortBy, user?.role]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -59,7 +81,7 @@ export default function PropertyListing() {
         maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
         bedrooms: filters.bedrooms ? Number(filters.bedrooms) : undefined,
         status: 'approved', // Only approved properties
-        sort: '-publishedAt', // Latest first
+        sort: sortBy,
       });
 
       if (response.success) {
@@ -83,6 +105,31 @@ export default function PropertyListing() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const clearAllFilters = useCallback(() => {
+    setFilters({
+      search: '',
+      propertyType: '',
+      listingType: '',
+      city: '',
+      minPrice: '',
+      maxPrice: '',
+      bedrooms: '',
+    });
+    setSearchInput('');
+    setSortBy('-publishedAt');
+    setPagination({ ...pagination, page: 1 });
+  }, [pagination]);
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.propertyType) count++;
+    if (filters.listingType) count++;
+    if (filters.city) count++;
+    if (filters.minPrice || filters.maxPrice) count++;
+    if (filters.bedrooms) count++;
+    return count;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Search Header */}
@@ -95,64 +142,152 @@ export default function PropertyListing() {
               <input
                 type="text"
                 placeholder="Search by location, property name..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
               />
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
             </div>
 
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+              className="relative flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
             >
               <SlidersHorizontal className="h-5 w-5" />
               <span>Filters</span>
+              {getActiveFilterCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                  {getActiveFilterCount()}
+                </span>
+              )}
             </button>
+
+            {/* Sort Dropdown */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none pl-10 pr-10 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none bg-white cursor-pointer"
+              >
+                <option value="-publishedAt">Newest First</option>
+                <option value="pricing.expectedPrice">Price: Low to High</option>
+                <option value="-pricing.expectedPrice">Price: High to Low</option>
+                <option value="-stats.views">Most Viewed</option>
+              </select>
+              <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+            </div>
           </div>
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
-              <select
-                value={filters.propertyType}
-                onChange={(e) => handleFilterChange('propertyType', e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-              >
-                <option value="">All Types</option>
-                <option value="apartment">Apartment</option>
-                <option value="villa">Villa</option>
-                <option value="independent-house">Independent House</option>
-                <option value="plot">Plot</option>
-              </select>
+            <div className="mt-4 space-y-4 pb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700">Filter Properties</h3>
+                {getActiveFilterCount() > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                  >
+                    <X className="h-4 w-4" />
+                    Clear All
+                  </button>
+                )}
+              </div>
 
-              <input
-                type="number"
-                placeholder="Min Price"
-                value={filters.minPrice}
-                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* City Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <select
+                    value={filters.city}
+                    onChange={(e) => handleFilterChange('city', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">All Cities</option>
+                    {indianCities.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
 
-              <input
-                type="number"
-                placeholder="Max Price"
-                value={filters.maxPrice}
-                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-              />
+                {/* Property Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                  <select
+                    value={filters.propertyType}
+                    onChange={(e) => handleFilterChange('propertyType', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">All Types</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="independent-house">Independent House</option>
+                    <option value="plot">Plot</option>
+                  </select>
+                </div>
 
-              <select
-                value={filters.bedrooms}
-                onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-              >
-                <option value="">Any Bedrooms</option>
-                <option value="1">1 BHK</option>
-                <option value="2">2 BHK</option>
-                <option value="3">3 BHK</option>
-                <option value="4">4+ BHK</option>
-              </select>
+                {/* Listing Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Listing Type</label>
+                  <select
+                    value={filters.listingType}
+                    onChange={(e) => handleFilterChange('listingType', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">All Listings</option>
+                    <option value="sale">For Sale</option>
+                    <option value="rent">For Rent</option>
+                  </select>
+                </div>
+
+                {/* Min Price */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Price (₹)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g., 2000000"
+                    value={filters.minPrice}
+                    onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Max Price */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Price (₹)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g., 10000000"
+                    value={filters.maxPrice}
+                    onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Bedrooms */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                  <select
+                    value={filters.bedrooms}
+                    onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">Any Bedrooms</option>
+                    <option value="1">1 BHK</option>
+                    <option value="2">2 BHK</option>
+                    <option value="3">3 BHK</option>
+                    <option value="4">4+ BHK</option>
+                  </select>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -163,8 +298,16 @@ export default function PropertyListing() {
         {/* Results Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{pagination.total} Properties Found</h1>
-            <p className="text-gray-600 mt-1">Showing verified listings in your area</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {loading ? 'Searching...' : `${pagination.total} ${pagination.total === 1 ? 'Property' : 'Properties'} Found`}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {filters.city ? `in ${filters.city}` : 'Showing verified listings'}
+              {sortBy === '-publishedAt' && ' • Newest first'}
+              {sortBy === 'pricing.expectedPrice' && ' • Price: Low to High'}
+              {sortBy === '-pricing.expectedPrice' && ' • Price: High to Low'}
+              {sortBy === '-stats.views' && ' • Most Viewed'}
+            </p>
           </div>
 
           <div className="flex gap-2">
