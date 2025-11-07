@@ -9,6 +9,7 @@ import {
   Share2,
   Phone,
   Mail,
+  MessageCircle,
   TrendingUp,
   Sparkles,
   ChevronLeft,
@@ -340,21 +341,47 @@ export default function PropertyDetail() {
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6">
+              {/* Contact Info */}
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Phone className="h-4 w-4" />
+                  <span>{property.owner.phone}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Mail className="h-4 w-4" />
+                  <span>{property.owner.email}</span>
+                </div>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="space-y-2 mb-6">
                 <a
                   href={`tel:${property.owner.phone}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                 >
-                  <Phone className="h-5 w-5 text-primary-600" />
-                  <span className="text-gray-900">{property.owner.phone}</span>
+                  <Phone className="h-5 w-5" />
+                  <span>Call Now</span>
                 </a>
                 <a
-                  href={`mailto:${property.owner.email}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                  href={`https://wa.me/91${property.owner.phone.replace(/\D/g, '')}?text=Hi, I'm interested in your property: ${encodeURIComponent(property.title)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                 >
-                  <Mail className="h-5 w-5 text-primary-600" />
-                  <span className="text-gray-900">{property.owner.email}</span>
+                  <MessageCircle className="h-5 w-5" />
+                  <span>WhatsApp</span>
                 </a>
+                <a
+                  href={`mailto:${property.owner.email}?subject=Inquiry for ${encodeURIComponent(property.title)}&body=Hi, I'm interested in this property and would like to know more details.`}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
+                >
+                  <Mail className="h-5 w-5" />
+                  <span>Send Email</span>
+                </a>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-xs text-gray-500 text-center mb-3">Or send an inquiry through our platform:</p>
               </div>
 
             </div>
