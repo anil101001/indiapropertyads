@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { propertyService, Property } from '../services/propertyService';
+import InquiryForm from '../components/InquiryForm';
 
 // Format price in Indian format
 const formatPrice = (price: number) => {
@@ -37,7 +38,6 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentImage, setCurrentImage] = useState(0);
-  const [showContactForm, setShowContactForm] = useState(false);
 
   // Fetch property from backend
   useEffect(() => {
@@ -357,41 +357,13 @@ export default function PropertyDetail() {
                 </a>
               </div>
 
-              <button
-                onClick={() => setShowContactForm(!showContactForm)}
-                className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition"
-              >
-                Schedule Viewing
-              </button>
-
-              {showContactForm && (
-                <div className="mt-4 space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Your Name"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary-500"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Your Email"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary-500"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Your Phone"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary-500"
-                  />
-                  <textarea
-                    placeholder="Message (Optional)"
-                    rows={3}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary-500"
-                  ></textarea>
-                  <button className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-                    Submit Request
-                  </button>
-                </div>
-              )}
             </div>
+
+            {/* Contact Form */}
+            <InquiryForm
+              propertyId={property._id}
+              propertyTitle={property.title}
+            />
 
             {/* Quick Stats */}
             <div className="bg-white rounded-xl shadow-lg p-6">

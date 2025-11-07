@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import propertyRoutes from './routes/property.routes';
 import uploadRoutes from './routes/upload.routes';
+import inquiryRoutes from './routes/inquiry.routes';
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/properties`, propertyRoutes);
 app.use(`${API_PREFIX}/upload`, uploadRoutes);
+app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 
 // 404 Handler
 app.use((_req, res) => {
