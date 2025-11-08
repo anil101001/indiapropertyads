@@ -326,7 +326,7 @@ export default function PropertyDetail() {
           {/* Right Column - Owner Contact */}
           <div className="space-y-6">
             {/* Owner Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-24 z-10">
+            <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Listed By</h3>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
