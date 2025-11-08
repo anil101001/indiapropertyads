@@ -29,6 +29,7 @@ export default function AddProperty() {
     description: '',
     propertyType: 'apartment',
     listingType: 'sale',
+    plotType: 'gated-community', // For plots only: 'gated-community' or 'independent'
     // Location
     fullAddress: '',
     city: '',
@@ -63,20 +64,54 @@ export default function AddProperty() {
     tags: ['Premium', 'Well-Connected', 'Family-Friendly'],
   });
 
-  const availableAmenities = [
-    'Swimming Pool',
-    'Gymnasium',
-    '24/7 Security',
-    'Power Backup',
-    'Lift',
-    'Club House',
-    'Garden',
-    'Children Play Area',
-    'Parking',
-    'Water Supply',
-    'Fire Safety',
-    'CCTV',
-  ];
+  // Amenities based on property type
+  const getAvailableAmenities = () => {
+    const commonAmenities = [
+      '24/7 Security',
+      'Power Backup',
+      'Water Supply',
+      'CCTV',
+      'Fire Safety',
+    ];
+
+    const buildingAmenities = [
+      'Swimming Pool',
+      'Gymnasium',
+      'Lift',
+      'Club House',
+      'Children Play Area',
+      'Parking',
+      'Garden',
+      'Intercom',
+      'Visitor Parking',
+      'Rainwater Harvesting',
+    ];
+
+    const independentPlotAmenities = [
+      'Corner Plot',
+      'Boundary Wall',
+      'Road Access',
+      'Electricity Connection',
+      'Sewage System',
+      'Street Lights',
+      'Park Nearby',
+    ];
+
+    // For gated community plots, show building amenities (community facilities) + common
+    if (formData.propertyType === 'plot' && formData.plotType === 'gated-community') {
+      return [...buildingAmenities, ...independentPlotAmenities, ...commonAmenities];
+    }
+    
+    // For independent plots, show only plot-specific + common amenities
+    if (formData.propertyType === 'plot' && formData.plotType === 'independent') {
+      return [...independentPlotAmenities, ...commonAmenities];
+    }
+    
+    // For buildings (apartment, villa, house), show building + common amenities
+    return [...buildingAmenities, ...commonAmenities];
+  };
+
+  const availableAmenities = getAvailableAmenities();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -414,6 +449,37 @@ export default function AddProperty() {
                   <option value="plot">Plot/Land</option>
                 </select>
               </div>
+
+              {/* Plot Type - Only show for plots */}
+              {formData.propertyType === 'plot' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Plot Type</label>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, plotType: 'gated-community' })}
+                      className={`flex-1 py-3 rounded-lg font-semibold transition ${
+                        formData.plotType === 'gated-community'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Gated Community
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, plotType: 'independent' })}
+                      className={`flex-1 py-3 rounded-lg font-semibold transition ${
+                        formData.plotType === 'independent'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Independent Plot
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Listing Type */}
               <div>
