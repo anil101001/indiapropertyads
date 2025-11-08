@@ -158,6 +158,18 @@ class AuthService {
     }
     return response;
   }
+
+  // Verify reset token
+  async verifyResetToken(token: string): Promise<any> {
+    const response = await api.get(`/auth/verify-reset-token/${token}`);
+    return response;
+  }
+
+  // Reset password with token
+  async resetPassword(token: string, password: string): Promise<any> {
+    const response = await api.post(`/auth/reset-password/${token}`, { password });
+    return response;
+  }
 }
 
 export const authService = new AuthService();

@@ -11,6 +11,8 @@ import AdminPendingProperties from './pages/AdminPendingProperties';
 import AdminReports from './pages/AdminReports';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AddProperty from './pages/AddProperty';
 import EditProperty from './pages/EditProperty';
 import MyProperties from './pages/MyProperties';
@@ -113,6 +115,8 @@ function App() {
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </AuthProvider>
     </Router>
