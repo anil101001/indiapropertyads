@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Validate API key is present
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+if (!RESEND_API_KEY) {
+  console.error('CRITICAL: RESEND_API_KEY environment variable is not set!');
+  console.error('Email functionality will not work. Please add RESEND_API_KEY to your environment variables.');
+}
+
+const resend = new Resend(RESEND_API_KEY || 'dummy-key-for-startup');
 
 interface EmailOptions {
   to: string;
@@ -9,6 +16,13 @@ interface EmailOptions {
 }
 
 export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
+  // Check if API key is configured
+  if (!RESEND_API_KEY) {
+    console.error('Cannot send email: RESEND_API_KEY is not configured');
+    console.error('Attempted to send:', options.subject, 'to', options.to);
+    return false;
+  }
+
   try {
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'India Property Ads <onboarding@resend.dev>',
