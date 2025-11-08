@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import User from '../models/User.model';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, JWTPayload } from '../utils/jwt';
-import { sendVerificationEmail } from '../utils/email';
-import { sendPasswordResetEmail, sendPasswordResetConfirmation } from '../services/email.service';
+import { sendPasswordResetEmail, sendPasswordResetConfirmation, sendOTPEmail } from '../services/email.service';
 import logger from '../utils/logger';
 
 // Generate 6-digit OTP
@@ -53,9 +52,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       }
     });
     
-    // Send verification email
+    // Send verification email using Resend
     try {
-      await sendVerificationEmail(email, emailOTP, profile.name);
+      await sendOTPEmail(email, profile.name, emailOTP);
     } catch (emailError) {
       logger.error('Failed to send verification email:', emailError);
       // Continue anyway - user can request new OTP
@@ -212,8 +211,8 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
     user.verification.emailOTPExpires = emailOTPExpires;
     await user.save();
     
-    // Send email
-    await sendVerificationEmail(email, emailOTP, user.profile.name);
+    // Send email using Resend
+    await sendOTPEmail(email, user.profile.name, emailOTP);
     
     res.json({
       success: true,

@@ -125,10 +125,10 @@ export default function Register() {
 
       if (result.needsVerification) {
         setSuccess(true);
-        // Redirect to login after 3 seconds
+        // Redirect to OTP verification after 2 seconds
         setTimeout(() => {
-          navigate('/login', { state: { email: formData.email, message: 'Please check your email for verification code' } });
-        }, 3000);
+          navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+        }, 2000);
       }
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -163,7 +163,7 @@ export default function Register() {
             {success && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm">Registration successful! Check your email for verification. Redirecting to login...</span>
+                <span className="text-sm">Account created! Check your email for verification code. Redirecting...</span>
               </div>
             )}
 
