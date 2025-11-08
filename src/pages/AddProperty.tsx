@@ -400,34 +400,19 @@ export default function AddProperty() {
                 )}
               </div>
 
-              {/* Property Type & Category */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
-                  <select
-                    value={formData.propertyType}
-                    onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="residential">Residential</option>
-                    <option value="commercial">Commercial</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={formData.listingType}
-                    onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="apartment">Apartment</option>
-                    <option value="villa">Villa</option>
-                    <option value="house">Independent House</option>
-                    <option value="office">Office Space</option>
-                    <option value="shop">Shop</option>
-                    <option value="land">Plot/Land</option>
-                  </select>
-                </div>
+              {/* Property Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                <select
+                  value={formData.propertyType}
+                  onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                >
+                  <option value="apartment">Apartment</option>
+                  <option value="villa">Villa</option>
+                  <option value="independent-house">Independent House</option>
+                  <option value="plot">Plot/Land</option>
+                </select>
               </div>
 
               {/* Listing Type */}
