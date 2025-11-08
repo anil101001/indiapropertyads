@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/User.model';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken, JWTPayload } from '../utils/jwt';
 import { sendVerificationEmail } from '../utils/email';
 import logger from '../utils/logger';
 
@@ -335,8 +335,15 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       return;
     }
     
-    // Generate new access token
-    const accessToken = generateAccessToken(payload);
+    // Extract only user data (exclude JWT metadata like exp, iat)
+    const userPayload: JWTPayload = {
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role
+    };
+    
+    // Generate new access token with clean payload
+    const accessToken = generateAccessToken(userPayload);
     
     res.json({
       success: true,
