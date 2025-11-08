@@ -36,7 +36,7 @@ export interface IProperty extends Document {
     possession: 'immediate' | '1-month' | '3-months' | 'under-construction';
   };
   
-  // Amenities (Top 10)
+  // Amenities
   amenities: string[];
   
   // Pricing
@@ -200,12 +200,7 @@ const PropertySchema = new Schema<IProperty>(
     // Amenities
     amenities: {
       type: [String],
-      validate: {
-        validator: function(v: string[]) {
-          return v.length <= 10;
-        },
-        message: 'Maximum 10 amenities allowed'
-      }
+      default: []
     },
     
     // Pricing

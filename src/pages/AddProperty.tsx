@@ -670,7 +670,7 @@ export default function AddProperty() {
                     onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    {[1, 2, 3, 4, 5].map((num) => (
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
                       <option key={num} value={num}>
                         {num} BHK
                       </option>
@@ -684,7 +684,7 @@ export default function AddProperty() {
                     onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    {[1, 2, 3, 4].map((num) => (
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                       <option key={num} value={num}>
                         {num}
                       </option>
