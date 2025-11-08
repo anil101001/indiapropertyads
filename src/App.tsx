@@ -14,6 +14,8 @@ import Register from './pages/Register';
 import AddProperty from './pages/AddProperty';
 import EditProperty from './pages/EditProperty';
 import MyProperties from './pages/MyProperties';
+import BuyerDashboard from './pages/BuyerDashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
@@ -29,7 +31,25 @@ function App() {
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             
+            {/* Protected Routes - Buyer */}
+            <Route 
+              path="buyer-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['buyer']}>
+                  <BuyerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Protected Routes - Owner/Agent */}
+            <Route 
+              path="owner-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'agent']}>
+                  <OwnerDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="add-property" 
               element={

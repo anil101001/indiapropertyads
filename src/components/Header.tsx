@@ -123,15 +123,35 @@ export default function Header() {
                         {user?.role}
                       </span>
                     </div>
-                    {(user?.role === 'owner' || user?.role === 'agent') && (
+                    {user?.role === 'buyer' && (
                       <Link
-                        to="/my-properties"
+                        to="/buyer-dashboard"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <Home className="inline h-4 w-4 mr-2" />
-                        My Properties
+                        <LayoutDashboard className="inline h-4 w-4 mr-2" />
+                        My Dashboard
                       </Link>
+                    )}
+                    {(user?.role === 'owner' || user?.role === 'agent') && (
+                      <>
+                        <Link
+                          to="/owner-dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <LayoutDashboard className="inline h-4 w-4 mr-2" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/my-properties"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Home className="inline h-4 w-4 mr-2" />
+                          My Properties
+                        </Link>
+                      </>
                     )}
                     {user?.role === 'agent' && (
                       <Link
@@ -140,7 +160,7 @@ export default function Header() {
                         onClick={() => setShowUserMenu(false)}
                       >
                         <LayoutDashboard className="inline h-4 w-4 mr-2" />
-                        Dashboard
+                        Agent Tools
                       </Link>
                     )}
                     {user?.role === 'admin' && (
