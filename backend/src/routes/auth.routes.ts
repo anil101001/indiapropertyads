@@ -6,6 +6,8 @@ import {
   login,
   refreshToken,
   forgotPassword,
+  resetPassword,
+  verifyResetToken,
   logout
 } from '../controllers/auth.controller';
 import { authRateLimiter } from '../middleware/rateLimiter';
@@ -20,6 +22,8 @@ router.post('/resend-otp', resendOTP);
 router.post('/login', authRateLimiter, login);
 router.post('/refresh', refreshToken);
 router.post('/forgot-password', authRateLimiter, forgotPassword);
+router.get('/verify-reset-token/:token', verifyResetToken);
+router.post('/reset-password/:token', resetPassword);
 
 // Protected routes
 router.post('/logout', authenticate, logout);
