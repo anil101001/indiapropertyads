@@ -5,6 +5,7 @@ export interface IProperty extends Document {
   description: string;
   propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot';
   listingType: 'sale' | 'rent';
+  plotType?: 'gated-community' | 'independent'; // Only for plots
   
   // Methods
   isOwner(userId: string): boolean;
@@ -113,6 +114,11 @@ const PropertySchema = new Schema<IProperty>(
       type: String,
       enum: ['sale', 'rent'],
       required: [true, 'Listing type is required']
+    },
+    plotType: {
+      type: String,
+      enum: ['gated-community', 'independent'],
+      required: false // Only required for plots
     },
     
     // Location
