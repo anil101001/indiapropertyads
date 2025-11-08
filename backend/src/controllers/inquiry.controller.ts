@@ -55,7 +55,7 @@ export const createInquiry = async (req: AuthRequest, res: Response): Promise<vo
       message,
       contactMethod,
       buyerInfo: {
-        name: buyer.name || 'Unknown',
+        name: buyer.profile?.name || 'Unknown',
         email: buyer.email || '',
         phone: buyer.phone || ''
       }
