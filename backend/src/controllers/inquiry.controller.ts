@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import Inquiry from '../models/Inquiry.model';
 import Property from '../models/Property.model';
+import User from '../models/User.model';
 import logger from '../utils/logger';
 
 // @route   POST /api/v1/inquiries
@@ -36,6 +37,16 @@ export const createInquiry = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
     
+    // Get buyer details from database
+    const buyer = await User.findById(req.user?.userId);
+    if (!buyer) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+    
     // Create inquiry
     const inquiry = await Inquiry.create({
       property: propertyId,
@@ -44,9 +55,9 @@ export const createInquiry = async (req: AuthRequest, res: Response): Promise<vo
       message,
       contactMethod,
       buyerInfo: {
-        name: req.user?.name || 'Unknown',
-        email: req.user?.email || '',
-        phone: req.user?.phone || ''
+        name: buyer.name || 'Unknown',
+        email: buyer.email || '',
+        phone: buyer.phone || ''
       }
     });
     
