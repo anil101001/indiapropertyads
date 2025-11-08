@@ -711,7 +711,7 @@ export default function AddProperty() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Furnishing Status</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {['furnished', 'semi-furnished', 'unfurnished'].map((type) => (
+                  {['unfurnished', 'semi-furnished', 'fully-furnished'].map((type) => (
                     <button
                       key={type}
                       type="button"
@@ -722,7 +722,7 @@ export default function AddProperty() {
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {type}
+                      {type.replace('-', ' ')}
                     </button>
                   ))}
                 </div>
