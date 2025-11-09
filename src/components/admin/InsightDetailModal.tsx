@@ -4,9 +4,10 @@ interface Property {
   _id: string;
   title: string;
   price?: number;
-  location?: {
+  address?: {
     city?: string;
     state?: string;
+    fullAddress?: string;
   };
   stats?: {
     views?: number;
@@ -70,8 +71,8 @@ export default function InsightDetailModal({ isOpen, onClose, title, data, loadi
                           {property.title || 'Untitled Property'}
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
-                          {property.location?.city && property.location?.state && (
-                            <span>📍 {property.location.city}, {property.location.state}</span>
+                          {property.address?.city && property.address?.state && (
+                            <span>📍 {property.address.city}, {property.address.state}</span>
                           )}
                           {property.price && (
                             <span>💰 ₹{(property.price / 100000).toFixed(2)} L</span>

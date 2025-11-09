@@ -185,16 +185,16 @@ export const getTopLocations = async (req: Request, res: Response) => {
       {
         $match: {
           $and: [
-            { "location.city": { $exists: true, $nin: [null, ""] } },
-            { "location.state": { $exists: true, $nin: [null, ""] } }
+            { "address.city": { $exists: true, $nin: [null, ""] } },
+            { "address.state": { $exists: true, $nin: [null, ""] } }
           ]
         }
       },
       {
         $group: {
           _id: {
-            city: "$location.city",
-            state: "$location.state"
+            city: "$address.city",
+            state: "$address.state"
           },
           count: { $sum: 1 }
         }
@@ -290,7 +290,7 @@ export const getPropertiesByType = async (req: Request, res: Response) => {
     const properties = await Property.find({ propertyType: type })
       .sort({ 'stats.views': -1 })
       .limit(limit)
-      .select('title price location stats propertyType createdAt')
+      .select('title price address stats propertyType createdAt')
       .populate('owner', 'profile.name email');
 
     res.json({ success: true, data: properties });
@@ -307,13 +307,13 @@ export const getPropertiesByLocation = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 20;
 
     const filter: any = {};
-    if (city) filter['location.city'] = city;
-    if (state) filter['location.state'] = state;
+    if (city) filter['address.city'] = city;
+    if (state) filter['address.state'] = state;
 
     const properties = await Property.find(filter)
       .sort({ 'stats.views': -1 })
       .limit(limit)
-      .select('title price location stats propertyType createdAt')
+      .select('title price address stats propertyType createdAt')
       .populate('owner', 'profile.name email');
 
     res.json({ success: true, data: properties });
@@ -343,7 +343,7 @@ export const getPropertiesByDateRange = async (req: Request, res: Response): Pro
     })
       .sort({ createdAt: -1 })
       .limit(limit)
-      .select('title price location stats propertyType createdAt')
+      .select('title price address stats propertyType createdAt')
       .populate('owner', 'profile.name email');
 
     res.json({ success: true, data: properties });
