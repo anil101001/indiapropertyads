@@ -7,7 +7,10 @@ import {
   getPropertyTypes,
   getTopLocations,
   getTopProperties,
-  getUserRegistrations
+  getUserRegistrations,
+  getPropertiesByType,
+  getPropertiesByLocation,
+  getPropertiesByDateRange
 } from '../controllers/insights.controller';
 
 const router = Router();
@@ -29,5 +32,10 @@ router.get('/top-locations', getTopLocations);
 
 // Top performers
 router.get('/top-properties', getTopProperties);
+
+// Drill-down endpoints
+router.get('/properties/by-type/:type', getPropertiesByType);
+router.get('/properties/by-location', getPropertiesByLocation);
+router.get('/properties/by-date', getPropertiesByDateRange);
 
 export default router;

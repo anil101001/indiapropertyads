@@ -9,11 +9,12 @@ interface PropertyTypeData {
 interface Props {
   data: PropertyTypeData[];
   loading: boolean;
+  onSliceClick?: (type: string) => void;
 }
 
 const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b'];
 
-export default function PropertyTypesChart({ data, loading }: Props) {
+export default function PropertyTypesChart({ data, loading, onSliceClick }: Props) {
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -54,9 +55,22 @@ export default function PropertyTypesChart({ data, loading }: Props) {
     return null;
   };
 
+  const handleClick = (data: any) => {
+    if (onSliceClick && data && data.name) {
+      // Convert display name back to type format
+      const type = data.name.toLowerCase();
+      onSliceClick(type);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Property Types Distribution</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-gray-900">Property Types Distribution</h3>
+        {onSliceClick && (
+          <p className="text-xs text-gray-500">Click on a slice to see details</p>
+        )}
+      </div>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -68,9 +82,15 @@ export default function PropertyTypesChart({ data, loading }: Props) {
             outerRadius={100}
             fill="#8884d8"
             dataKey="value"
+            onClick={handleClick}
+            style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
           >
             {chartData.map((_entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={COLORS[index % COLORS.length]}
+                style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
+              />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />

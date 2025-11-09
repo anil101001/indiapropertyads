@@ -9,9 +9,10 @@ interface LocationData {
 interface Props {
   data: LocationData[];
   loading: boolean;
+  onBarClick?: (city: string, state: string) => void;
 }
 
-export default function TopLocationsChart({ data, loading }: Props) {
+export default function TopLocationsChart({ data, loading, onBarClick }: Props) {
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -32,15 +33,28 @@ export default function TopLocationsChart({ data, loading }: Props) {
     );
   }
 
-  // Format data for chart
+  // Format data for chart, including original city and state
   const chartData = data.map(item => ({
     location: `${item.city}, ${item.state}`,
-    properties: item.count
+    properties: item.count,
+    city: item.city,
+    state: item.state
   }));
+
+  const handleClick = (data: any) => {
+    if (onBarClick && data && data.city && data.state) {
+      onBarClick(data.city, data.state);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Top Locations</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-gray-900">Top Locations</h3>
+        {onBarClick && (
+          <p className="text-xs text-gray-500">Click on a bar to see details</p>
+        )}
+      </div>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} layout="horizontal">
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -70,6 +84,8 @@ export default function TopLocationsChart({ data, loading }: Props) {
             fill="#667eea"
             radius={[0, 8, 8, 0]}
             name="Properties"
+            onClick={handleClick}
+            style={{ cursor: onBarClick ? 'pointer' : 'default' }}
           />
         </BarChart>
       </ResponsiveContainer>

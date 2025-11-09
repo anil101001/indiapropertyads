@@ -4,6 +4,7 @@ import InsightsOverview from '../../components/admin/InsightsOverview';
 import TimelineChart from '../../components/admin/TimelineChart';
 import PropertyTypesChart from '../../components/admin/PropertyTypesChart';
 import TopLocationsChart from '../../components/admin/TopLocationsChart';
+import InsightDetailModal from '../../components/admin/InsightDetailModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -16,9 +17,57 @@ export default function Insights() {
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
   const [topLocations, setTopLocations] = useState<any[]>([]);
 
+  // Drill-down modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalData, setModalData] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+
   useEffect(() => {
     fetchInsights();
   }, [dateRange]);
+
+  // Drill-down handlers
+  const handlePropertyTypeClick = async (type: string) => {
+    setModalLoading(true);
+    setIsModalOpen(true);
+    setModalTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Properties`);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${API_URL}/insights/properties/by-type/${type}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setModalData(data.data || []);
+    } catch (error) {
+      console.error('Error fetching property details:', error);
+      setModalData([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleLocationClick = async (city: string, state: string) => {
+    setModalLoading(true);
+    setIsModalOpen(true);
+    setModalTitle(`Properties in ${city}, ${state}`);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(
+        `${API_URL}/insights/properties/by-location?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await response.json();
+      setModalData(data.data || []);
+    } catch (error) {
+      console.error('Error fetching location details:', error);
+      setModalData([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   const fetchInsights = async () => {
     setLoading(true);
@@ -133,10 +182,27 @@ export default function Insights() {
 
           {/* Property Types and Locations */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <PropertyTypesChart data={propertyTypes} loading={loading} />
-            <TopLocationsChart data={topLocations} loading={loading} />
+            <PropertyTypesChart 
+              data={propertyTypes} 
+              loading={loading}
+              onSliceClick={handlePropertyTypeClick}
+            />
+            <TopLocationsChart 
+              data={topLocations} 
+              loading={loading}
+              onBarClick={handleLocationClick}
+            />
           </div>
         </div>
+
+        {/* Drill-down Modal */}
+        <InsightDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={modalTitle}
+          data={modalData}
+          loading={modalLoading}
+        />
       </div>
     </div>
   );

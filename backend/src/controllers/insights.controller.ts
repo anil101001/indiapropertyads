@@ -183,6 +183,12 @@ export const getTopLocations = async (req: Request, res: Response) => {
 
     const locations = await Property.aggregate([
       {
+        $match: {
+          "location.city": { $exists: true, $ne: null, $ne: "" },
+          "location.state": { $exists: true, $ne: null, $ne: "" }
+        }
+      },
+      {
         $group: {
           _id: {
             city: "$location.city",
@@ -270,5 +276,76 @@ export const getUserRegistrations = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Error fetching user registrations:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch user registrations' });
+  }
+};
+
+// Get properties by type (drill-down)
+export const getPropertiesByType = async (req: Request, res: Response) => {
+  try {
+    const { type } = req.params;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const properties = await Property.find({ propertyType: type })
+      .sort({ 'stats.views': -1 })
+      .limit(limit)
+      .select('title price location stats propertyType createdAt')
+      .populate('owner', 'profile.name email');
+
+    res.json({ success: true, data: properties });
+  } catch (error) {
+    logger.error('Error fetching properties by type:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch properties' });
+  }
+};
+
+// Get properties by location (drill-down)
+export const getPropertiesByLocation = async (req: Request, res: Response) => {
+  try {
+    const { city, state } = req.query;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const filter: any = {};
+    if (city) filter['location.city'] = city;
+    if (state) filter['location.state'] = state;
+
+    const properties = await Property.find(filter)
+      .sort({ 'stats.views': -1 })
+      .limit(limit)
+      .select('title price location stats propertyType createdAt')
+      .populate('owner', 'profile.name email');
+
+    res.json({ success: true, data: properties });
+  } catch (error) {
+    logger.error('Error fetching properties by location:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch properties' });
+  }
+};
+
+// Get properties by date range (drill-down)
+export const getPropertiesByDateRange = async (req: Request, res: Response) => {
+  try {
+    const { date } = req.query;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    if (!date) {
+      return res.status(400).json({ success: false, message: 'Date parameter required' });
+    }
+
+    const startDate = new Date(date as string);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const properties = await Property.find({
+      createdAt: { $gte: startDate, $lt: endDate }
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('title price location stats propertyType createdAt')
+      .populate('owner', 'profile.name email');
+
+    res.json({ success: true, data: properties });
+  } catch (error) {
+    logger.error('Error fetching properties by date:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch properties' });
   }
 };
