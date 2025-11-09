@@ -184,8 +184,10 @@ export const getTopLocations = async (req: Request, res: Response) => {
     const locations = await Property.aggregate([
       {
         $match: {
-          "location.city": { $exists: true, $ne: null, $ne: "" },
-          "location.state": { $exists: true, $ne: null, $ne: "" }
+          $and: [
+            { "location.city": { $exists: true, $ne: null, $ne: "" } },
+            { "location.state": { $exists: true, $ne: null, $ne: "" } }
+          ]
         }
       },
       {
@@ -322,13 +324,14 @@ export const getPropertiesByLocation = async (req: Request, res: Response) => {
 };
 
 // Get properties by date range (drill-down)
-export const getPropertiesByDateRange = async (req: Request, res: Response) => {
+export const getPropertiesByDateRange = async (req: Request, res: Response): Promise<void> => {
   try {
     const { date } = req.query;
     const limit = parseInt(req.query.limit as string) || 20;
 
     if (!date) {
-      return res.status(400).json({ success: false, message: 'Date parameter required' });
+      res.status(400).json({ success: false, message: 'Date parameter required' });
+      return;
     }
 
     const startDate = new Date(date as string);
