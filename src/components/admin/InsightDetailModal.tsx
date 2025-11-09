@@ -3,14 +3,15 @@ import { X } from 'lucide-react';
 interface Property {
   _id: string;
   title: string;
-  price: number;
-  location: {
-    city: string;
-    state: string;
+  price?: number;
+  location?: {
+    city?: string;
+    state?: string;
   };
-  stats: {
-    views: number;
+  stats?: {
+    views?: number;
   };
+  propertyType?: string;
 }
 
 interface Props {
@@ -66,19 +67,30 @@ export default function InsightDetailModal({ isOpen, onClose, title, data, loadi
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-2">
-                          {property.title}
+                          {property.title || 'Untitled Property'}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>📍 {property.location.city}, {property.location.state}</span>
-                          <span>💰 ₹{(property.price / 100000).toFixed(2)} L</span>
-                          <span>👁️ {property.stats.views} views</span>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+                          {property.location?.city && property.location?.state && (
+                            <span>📍 {property.location.city}, {property.location.state}</span>
+                          )}
+                          {property.price && (
+                            <span>💰 ₹{(property.price / 100000).toFixed(2)} L</span>
+                          )}
+                          {property.stats?.views !== undefined && (
+                            <span>👁️ {property.stats.views} views</span>
+                          )}
+                          {property.propertyType && (
+                            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium capitalize">
+                              {property.propertyType}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <a
                         href={`/property/${property._id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium"
+                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium whitespace-nowrap"
                       >
                         View
                       </a>
