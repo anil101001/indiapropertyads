@@ -42,8 +42,14 @@ export default function TopLocationsChart({ data, loading, onBarClick }: Props) 
   }));
 
   const handleClick = (data: any) => {
-    if (onBarClick && data && data.city && data.state) {
-      onBarClick(data.city, data.state);
+    console.log('Bar chart clicked - data:', data);
+    if (onBarClick && data) {
+      const city = data.city;
+      const state = data.state;
+      console.log('Calling onBarClick with city:', city, 'state:', state);
+      if (city && state) {
+        onBarClick(city, state);
+      }
     }
   };
 
@@ -52,7 +58,7 @@ export default function TopLocationsChart({ data, loading, onBarClick }: Props) 
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900">Top Locations</h3>
         {onBarClick && (
-          <p className="text-xs text-gray-500">Click on a bar to see details</p>
+          <p className="text-xs text-gray-500">✨ Click on a bar to see details</p>
         )}
       </div>
       <ResponsiveContainer width="100%" height={300}>
@@ -85,7 +91,7 @@ export default function TopLocationsChart({ data, loading, onBarClick }: Props) 
             radius={[0, 8, 8, 0]}
             name="Properties"
             onClick={handleClick}
-            style={{ cursor: onBarClick ? 'pointer' : 'default' }}
+            cursor="pointer"
           />
         </BarChart>
       </ResponsiveContainer>

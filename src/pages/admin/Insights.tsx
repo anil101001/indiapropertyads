@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import InsightsOverview from '../../components/admin/InsightsOverview';
 import TimelineChart from '../../components/admin/TimelineChart';

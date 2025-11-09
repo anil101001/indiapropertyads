@@ -55,11 +55,15 @@ export default function PropertyTypesChart({ data, loading, onSliceClick }: Prop
     return null;
   };
 
-  const handleClick = (data: any) => {
-    if (onSliceClick && data && data.name) {
-      // Convert display name back to type format
-      const type = data.name.toLowerCase();
-      onSliceClick(type);
+  const handleClick = (data: any, index: number) => {
+    console.log('Pie chart clicked - data:', data, 'index:', index);
+    if (onSliceClick && data) {
+      // Get the type from the clicked data
+      const type = data.name ? data.name.toLowerCase() : chartData[index]?.name.toLowerCase();
+      console.log('Calling onSliceClick with type:', type);
+      if (type) {
+        onSliceClick(type);
+      }
     }
   };
 
@@ -68,7 +72,7 @@ export default function PropertyTypesChart({ data, loading, onSliceClick }: Prop
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900">Property Types Distribution</h3>
         {onSliceClick && (
-          <p className="text-xs text-gray-500">Click on a slice to see details</p>
+          <p className="text-xs text-gray-500">✨ Click on a slice to see details</p>
         )}
       </div>
       <ResponsiveContainer width="100%" height={300}>
@@ -83,13 +87,12 @@ export default function PropertyTypesChart({ data, loading, onSliceClick }: Prop
             fill="#8884d8"
             dataKey="value"
             onClick={handleClick}
-            style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
+            cursor={onSliceClick ? 'pointer' : 'default'}
           >
             {chartData.map((_entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
                 fill={COLORS[index % COLORS.length]}
-                style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
               />
             ))}
           </Pie>
