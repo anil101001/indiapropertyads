@@ -240,6 +240,55 @@ export const getTopProperties = async (req: Request, res: Response) => {
   }
 };
 
+// Get top properties by inquiry count
+export const getTopPropertiesByInquiries = async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const topProperties = await Inquiry.aggregate([
+      {
+        $group: {
+          _id: "$property",
+          inquiryCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { inquiryCount: -1 }
+      },
+      {
+        $limit: limit
+      },
+      {
+        $lookup: {
+          from: "properties",
+          localField: "_id",
+          foreignField: "_id",
+          as: "propertyDetails"
+        }
+      },
+      {
+        $unwind: "$propertyDetails"
+      },
+      {
+        $project: {
+          _id: 0,
+          propertyId: "$_id",
+          title: "$propertyDetails.title",
+          price: "$propertyDetails.price",
+          address: "$propertyDetails.address",
+          propertyType: "$propertyDetails.propertyType",
+          inquiryCount: 1
+        }
+      }
+    ]);
+
+    res.json({ success: true, data: topProperties });
+  } catch (error) {
+    logger.error('Error fetching top properties by inquiries:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch top properties by inquiries' });
+  }
+};
+
 // Get user registration timeline
 export const getUserRegistrations = async (req: Request, res: Response) => {
   try {

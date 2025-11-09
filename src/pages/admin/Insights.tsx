@@ -4,6 +4,7 @@ import InsightsOverview from '../../components/admin/InsightsOverview';
 import TimelineChart from '../../components/admin/TimelineChart';
 import PropertyTypesChart from '../../components/admin/PropertyTypesChart';
 import TopLocationsChart from '../../components/admin/TopLocationsChart';
+import TopPropertiesByInquiriesChart from '../../components/admin/TopPropertiesByInquiriesChart';
 import InsightDetailModal from '../../components/admin/InsightDetailModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
@@ -13,7 +14,7 @@ export default function Insights() {
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<any>(null);
   const [propertiesTimeline, setPropertiesTimeline] = useState<any[]>([]);
-  const [inquiriesTimeline, setInquiriesTimeline] = useState<any[]>([]);
+  const [topPropertiesByInquiries, setTopPropertiesByInquiries] = useState<any[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
   const [topLocations, setTopLocations] = useState<any[]>([]);
 
@@ -99,13 +100,13 @@ export default function Insights() {
       const [
         overviewRes,
         propertiesTimelineRes,
-        inquiriesTimelineRes,
+        topPropertiesByInquiriesRes,
         propertyTypesRes,
         topLocationsRes
       ] = await Promise.all([
         fetch(`${API_URL}/insights/overview?${params}`, { headers }),
         fetch(`${API_URL}/insights/properties-timeline?${params}`, { headers }),
-        fetch(`${API_URL}/insights/inquiries-timeline?${params}`, { headers }),
+        fetch(`${API_URL}/insights/top-properties-by-inquiries?limit=10`, { headers }),
         fetch(`${API_URL}/insights/property-types`, { headers }),
         fetch(`${API_URL}/insights/top-locations?limit=10`, { headers })
       ]);
@@ -113,20 +114,20 @@ export default function Insights() {
       const [
         overviewData,
         propertiesTimelineData,
-        inquiriesTimelineData,
+        topPropertiesByInquiriesData,
         propertyTypesData,
         topLocationsData
       ] = await Promise.all([
         overviewRes.json(),
         propertiesTimelineRes.json(),
-        inquiriesTimelineRes.json(),
+        topPropertiesByInquiriesRes.json(),
         propertyTypesRes.json(),
         topLocationsRes.json()
       ]);
 
       setOverview(overviewData.data);
       setPropertiesTimeline(propertiesTimelineData.data || []);
-      setInquiriesTimeline(inquiriesTimelineData.data || []);
+      setTopPropertiesByInquiries(topPropertiesByInquiriesData.data || []);
       setPropertyTypes(propertyTypesData.data || []);
       setTopLocations(topLocationsData.data || []);
     } catch (error) {
@@ -179,12 +180,14 @@ export default function Insights() {
             loading={loading}
           />
 
-          {/* Inquiries Timeline */}
-          <TimelineChart
-            data={inquiriesTimeline}
-            title="Inquiries Over Time"
-            color="#10b981"
+          {/* Top Properties by Inquiries */}
+          <TopPropertiesByInquiriesChart
+            data={topPropertiesByInquiries}
             loading={loading}
+            onBarClick={(propertyId, title) => {
+              // Navigate to property page
+              window.open(`/property/${propertyId}`, '_blank');
+            }}
           />
 
           {/* Property Types and Locations */}

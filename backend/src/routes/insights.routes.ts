@@ -7,6 +7,7 @@ import {
   getPropertyTypes,
   getTopLocations,
   getTopProperties,
+  getTopPropertiesByInquiries,
   getUserRegistrations,
   getPropertiesByType,
   getPropertiesByLocation,
@@ -32,6 +33,7 @@ router.get('/top-locations', getTopLocations);
 
 // Top performers
 router.get('/top-properties', getTopProperties);
+router.get('/top-properties-by-inquiries', getTopPropertiesByInquiries);
 
 // Drill-down endpoints
 router.get('/properties/by-type/:type', getPropertiesByType);
