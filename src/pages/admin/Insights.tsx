@@ -184,7 +184,7 @@ export default function Insights() {
           <TopPropertiesByInquiriesChart
             data={topPropertiesByInquiries}
             loading={loading}
-            onBarClick={(propertyId, title) => {
+            onBarClick={(propertyId) => {
               // Navigate to property page
               window.open(`/property/${propertyId}`, '_blank');
             }}
