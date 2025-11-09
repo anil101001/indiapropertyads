@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import InsightsOverview from '../../components/admin/InsightsOverview';
 import TimelineChart from '../../components/admin/TimelineChart';
@@ -29,16 +29,20 @@ export default function Insights() {
 
   // Drill-down handlers
   const handlePropertyTypeClick = async (type: string) => {
+    console.log('Property type clicked:', type);
     setModalLoading(true);
     setIsModalOpen(true);
     setModalTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Properties`);
     
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${API_URL}/insights/properties/by-type/${type}`, {
+      const url = `${API_URL}/insights/properties/by-type/${type}`;
+      console.log('Fetching from:', url);
+      const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
+      console.log('Received data:', data);
       setModalData(data.data || []);
     } catch (error) {
       console.error('Error fetching property details:', error);
@@ -49,17 +53,20 @@ export default function Insights() {
   };
 
   const handleLocationClick = async (city: string, state: string) => {
+    console.log('Location clicked:', city, state);
     setModalLoading(true);
     setIsModalOpen(true);
     setModalTitle(`Properties in ${city}, ${state}`);
     
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(
-        `${API_URL}/insights/properties/by-location?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
+      const url = `${API_URL}/insights/properties/by-location?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`;
+      console.log('Fetching from:', url);
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
+      console.log('Received data:', data);
       setModalData(data.data || []);
     } catch (error) {
       console.error('Error fetching location details:', error);
