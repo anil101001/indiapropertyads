@@ -1,0 +1,143 @@
+import { useState, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
+import InsightsOverview from '../../components/admin/InsightsOverview';
+import TimelineChart from '../../components/admin/TimelineChart';
+import PropertyTypesChart from '../../components/admin/PropertyTypesChart';
+import TopLocationsChart from '../../components/admin/TopLocationsChart';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+export default function Insights() {
+  const [dateRange, setDateRange] = useState('30');
+  const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<any>(null);
+  const [propertiesTimeline, setPropertiesTimeline] = useState<any[]>([]);
+  const [inquiriesTimeline, setInquiriesTimeline] = useState<any[]>([]);
+  const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
+  const [topLocations, setTopLocations] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchInsights();
+  }, [dateRange]);
+
+  const fetchInsights = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Calculate date range
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - parseInt(dateRange));
+
+      const params = new URLSearchParams({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
+
+      // Fetch all insights data
+      const [
+        overviewRes,
+        propertiesTimelineRes,
+        inquiriesTimelineRes,
+        propertyTypesRes,
+        topLocationsRes
+      ] = await Promise.all([
+        fetch(`${API_URL}/insights/overview?${params}`, { headers }),
+        fetch(`${API_URL}/insights/properties-timeline?${params}`, { headers }),
+        fetch(`${API_URL}/insights/inquiries-timeline?${params}`, { headers }),
+        fetch(`${API_URL}/insights/property-types`, { headers }),
+        fetch(`${API_URL}/insights/top-locations?limit=10`, { headers })
+      ]);
+
+      const [
+        overviewData,
+        propertiesTimelineData,
+        inquiriesTimelineData,
+        propertyTypesData,
+        topLocationsData
+      ] = await Promise.all([
+        overviewRes.json(),
+        propertiesTimelineRes.json(),
+        inquiriesTimelineRes.json(),
+        propertyTypesRes.json(),
+        topLocationsRes.json()
+      ]);
+
+      setOverview(overviewData.data);
+      setPropertiesTimeline(propertiesTimelineData.data || []);
+      setInquiriesTimeline(inquiriesTimelineData.data || []);
+      setPropertyTypes(propertyTypesData.data || []);
+      setTopLocations(topLocationsData.data || []);
+    } catch (error) {
+      console.error('Error fetching insights:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Platform Insights</h1>
+          <p className="text-gray-600">Monitor your platform's performance and growth</p>
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Calendar className="h-5 w-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Time Period:</span>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 6 Months</option>
+              <option value="365">Last Year</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Overview Cards */}
+        {overview && (
+          <InsightsOverview data={overview} loading={loading} />
+        )}
+
+        {/* Charts Grid */}
+        <div className="space-y-8">
+          {/* Properties Timeline */}
+          <TimelineChart
+            data={propertiesTimeline}
+            title="Properties Posted Over Time"
+            color="#667eea"
+            loading={loading}
+          />
+
+          {/* Inquiries Timeline */}
+          <TimelineChart
+            data={inquiriesTimeline}
+            title="Inquiries Over Time"
+            color="#10b981"
+            loading={loading}
+          />
+
+          {/* Property Types and Locations */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <PropertyTypesChart data={propertyTypes} loading={loading} />
+            <TopLocationsChart data={topLocations} loading={loading} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

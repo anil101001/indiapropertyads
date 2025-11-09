@@ -9,6 +9,7 @@ import AgentDashboard from './pages/AgentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminPendingProperties from './pages/AdminPendingProperties';
 import AdminReports from './pages/AdminReports';
+import AdminInsights from './pages/admin/Insights';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
@@ -110,6 +111,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminReports />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin-insights" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminInsights />
                 </ProtectedRoute>
               } 
             />

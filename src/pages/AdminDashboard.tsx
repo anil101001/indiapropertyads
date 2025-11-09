@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Building2,
@@ -9,9 +10,11 @@ import {
   Clock,
   MapPin,
   Star,
+  BarChart3,
 } from 'lucide-react';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('30d');
 
   // Mock admin data
@@ -73,7 +76,14 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600">Platform analytics and management</p>
           </div>
-          <div className="mt-4 md:mt-0 flex gap-2">
+          <div className="mt-4 md:mt-0 flex gap-3">
+            <button
+              onClick={() => navigate('/admin-insights')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-lg hover:from-primary-700 hover:to-purple-700 transition font-medium shadow-lg"
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>View Insights</span>
+            </button>
             {(['7d', '30d', '90d'] as const).map((period) => (
               <button
                 key={period}
