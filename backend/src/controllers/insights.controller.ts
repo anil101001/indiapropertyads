@@ -185,8 +185,8 @@ export const getTopLocations = async (req: Request, res: Response) => {
       {
         $match: {
           $and: [
-            { "location.city": { $exists: true, $ne: null, $ne: "" } },
-            { "location.state": { $exists: true, $ne: null, $ne: "" } }
+            { "location.city": { $exists: true, $nin: [null, ""] } },
+            { "location.state": { $exists: true, $nin: [null, ""] } }
           ]
         }
       },
