@@ -62,7 +62,7 @@ export default function TopLocationsChart({ data, loading, onBarClick }: Props) 
         )}
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData} layout="horizontal">
+        <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis 
             type="number"
@@ -73,8 +73,8 @@ export default function TopLocationsChart({ data, loading, onBarClick }: Props) 
             type="category"
             dataKey="location"
             stroke="#6b7280"
-            style={{ fontSize: '12px' }}
-            width={150}
+            style={{ fontSize: '11px' }}
+            width={160}
           />
           <Tooltip 
             contentStyle={{ 
