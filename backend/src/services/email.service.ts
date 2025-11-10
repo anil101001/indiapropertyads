@@ -25,7 +25,7 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'India Property Ads <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || 'India Property Ads <contact@azentiq.ai>',
       to: options.to,
       subject: options.subject,
       html: options.html,
