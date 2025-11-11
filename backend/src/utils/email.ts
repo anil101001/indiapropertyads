@@ -35,7 +35,7 @@ export const sendVerificationEmail = async (
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: `${process.env.EMAIL_FROM_NAME || 'India Property Ads'} <${process.env.EMAIL_FROM || 'noreply@indiapropertyads.com'}>`,
+      from: `${process.env.EMAIL_FROM_NAME || 'India Property Ads'} <${process.env.EMAIL_FROM || 'no-reply@azentiq.ai'}>`,
       to,
       subject: 'Verify Your Email - India Property Ads',
       html: `
@@ -92,7 +92,7 @@ export const sendPasswordResetEmail = async (
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
     
     const mailOptions = {
-      from: `${process.env.EMAIL_FROM_NAME || 'India Property Ads'} <${process.env.EMAIL_FROM || 'noreply@indiapropertyads.com'}>`,
+      from: `${process.env.EMAIL_FROM_NAME || 'India Property Ads'} <${process.env.EMAIL_FROM || 'no-reply@azentiq.ai'}>`,
       to,
       subject: 'Reset Your Password - India Property Ads',
       html: `
