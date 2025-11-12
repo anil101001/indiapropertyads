@@ -1,10 +1,12 @@
-import mongoose from 'mongoose';
+// IMPORTANT: Load environment variables FIRST, before any other imports
 import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Now import other modules (they will see the env vars)
+import mongoose from 'mongoose';
 import Property from '../src/models/Property.model';
 import { generatePropertyEmbedding } from '../src/services/embedding.service';
-import logger from '../src/utils/logger';
-
-dotenv.config();
 
 interface VectorizationStats {
   total: number;
