@@ -113,8 +113,7 @@ async function downloadAsMulterFile(
  * Load images for a single property
  */
 async function loadPropertyImages(
-  property: any,
-  index: number
+  property: any
 ): Promise<any[]> {
   const images: any[] = [];
   const propertyType = property.propertyType as keyof typeof imagesByType;
@@ -190,7 +189,7 @@ async function loadImages() {
 
       try {
         // Load and upload images
-        const images = await loadPropertyImages(property, i);
+        const images = await loadPropertyImages(property);
 
         if (images.length > 0) {
           // Update property
