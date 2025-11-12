@@ -272,7 +272,7 @@ export const getChatStats = async (req: AuthRequest, res: Response): Promise<voi
  * @desc    Check AI chat service health
  * @access  Public
  */
-export const healthCheck = async (req: AuthRequest, res: Response): Promise<void> => {
+export const healthCheck = async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
     const llmService = require('../services/llm.service').default;
     

@@ -57,10 +57,12 @@ class ChatOrchestratorService {
       let response: ChatResponse;
 
       // Handle based on intent
+      let partialResponse: Partial<ChatResponse>;
+      
       switch (intentAnalysis.intent) {
         case ConversationIntent.SEARCH:
         case ConversationIntent.FILTER:
-          response = await this.handlePropertySearch(
+          partialResponse = await this.handlePropertySearch(
             request.message,
             intentAnalysis.extractedData,
             conversation.userPreferences,
@@ -69,14 +71,14 @@ class ChatOrchestratorService {
           break;
 
         case ConversationIntent.INQUIRY:
-          response = await this.handlePropertyInquiry(
+          partialResponse = await this.handlePropertyInquiry(
             request.message,
             history
           );
           break;
 
         case ConversationIntent.CLARIFICATION:
-          response = await this.handleClarification(
+          partialResponse = await this.handleClarification(
             request.message,
             intentAnalysis.extractedData,
             history
@@ -84,15 +86,21 @@ class ChatOrchestratorService {
           break;
 
         default:
-          response = await this.handleGeneralQuery(
+          partialResponse = await this.handleGeneralQuery(
             request.message,
             history
           );
       }
 
-      // Add conversation ID
-      response.conversationId = conversation.conversationId;
-      response.intent = intentAnalysis.intent;
+      // Build complete response
+      response = {
+        reply: partialResponse.reply || "I'm here to help you find properties.",
+        conversationId: conversation.conversationId,
+        properties: partialResponse.properties || [],
+        suggestedQuestions: partialResponse.suggestedQuestions || [],
+        intent: intentAnalysis.intent,
+        metadata: partialResponse.metadata
+      };
 
       // Save assistant response to conversation
       await conversationService.addMessage(conversation.conversationId, request.userId, {
@@ -253,7 +261,7 @@ class ChatOrchestratorService {
    */
   private async handleClarification(
     userMessage: string,
-    extractedData: any,
+    _extractedData: any,
     history: any[] = []
   ): Promise<Partial<ChatResponse>> {
     try {

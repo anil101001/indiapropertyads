@@ -14,6 +14,7 @@ import propertyRoutes from './routes/property.routes';
 import uploadRoutes from './routes/upload.routes';
 import inquiryRoutes from './routes/inquiry.routes';
 import insightsRoutes from './routes/insights.routes';
+import { chatRoutes } from './ai-chat'; // AI Chat Module
 
 // Load environment variables
 dotenv.config();
@@ -58,6 +59,7 @@ app.use(`${API_PREFIX}/properties`, propertyRoutes);
 app.use(`${API_PREFIX}/upload`, uploadRoutes);
 app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 app.use(`${API_PREFIX}/insights`, insightsRoutes);
+app.use(`${API_PREFIX}/ai-chat`, chatRoutes); // AI Chat Module
 
 // 404 Handler
 app.use((_req, res) => {

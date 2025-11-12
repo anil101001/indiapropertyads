@@ -4,12 +4,12 @@
  */
 
 import OpenAI from 'openai';
-import { ChatMessage, LLMConfig, IntentAnalysis } from '../types/chat.types';
+import { ChatMessage, LLMConfig, IntentAnalysis, ConversationIntent } from '../types/chat.types';
 import { SYSTEM_PROMPTS, LLM_CONFIGS } from '../config/prompts';
 import logger from '../../utils/logger';
 
 class LLMService {
-  private client: OpenAI;
+  private client: OpenAI | null = null;
   private enabled: boolean;
 
   constructor() {
@@ -36,7 +36,7 @@ class LLMService {
     messages: ChatMessage[],
     config: LLMConfig = LLM_CONFIGS.DEFAULT
   ): Promise<{ content: string; tokensUsed: number }> {
-    if (!this.enabled) {
+    if (!this.enabled || !this.client) {
       throw new Error('LLM service is not enabled. Set ENABLE_VECTORIZATION=true and configure OPENAI_API_KEY');
     }
 
@@ -102,7 +102,7 @@ class LLMService {
       const parsed = JSON.parse(response.content);
 
       return {
-        intent: parsed.intent || 'general',
+        intent: parsed.intent || ConversationIntent.GENERAL,
         confidence: parsed.confidence || 0.5,
         extractedData: {
           location: parsed.location,
@@ -119,7 +119,7 @@ class LLMService {
       
       // Fallback to basic intent detection
       return {
-        intent: 'general',
+        intent: ConversationIntent.GENERAL,
         confidence: 0.3,
         extractedData: {}
       };
@@ -203,7 +203,7 @@ class LLMService {
    * Generate embeddings for text (reuse from existing embedding service)
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    if (!this.enabled) {
+    if (!this.enabled || !this.client) {
       throw new Error('LLM service is not enabled');
     }
 
