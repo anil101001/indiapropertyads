@@ -46,6 +46,7 @@ class ChatOrchestratorService {
       // Extract user intent
       const intentAnalysis = await llmService.extractIntent(request.message);
       logger.info(`Intent detected: ${intentAnalysis.intent} (confidence: ${intentAnalysis.confidence})`);
+      logger.info(`Extracted data: ${JSON.stringify(intentAnalysis.extractedData)}`);
 
       // Update user preferences based on extracted data
       if (intentAnalysis.extractedData && Object.keys(intentAnalysis.extractedData).length > 0) {
@@ -157,8 +158,11 @@ class ChatOrchestratorService {
         ...this.buildPreferencesFromIntent(extractedData)
       };
 
+      logger.info(`Search filters built: ${JSON.stringify(filters)}`);
+
       // Check if we have enough information to search
       const missingInfo = this.getMissingSearchCriteria(filters);
+      logger.info(`Missing search criteria: ${JSON.stringify(missingInfo)}`);
       
       if (missingInfo.length > 0) {
         // Need clarification

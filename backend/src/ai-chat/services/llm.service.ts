@@ -99,6 +99,8 @@ class LLMService {
    */
   async extractIntent(userMessage: string): Promise<IntentAnalysis> {
     try {
+      logger.info(`Extracting intent for message: "${userMessage}"`);
+      
       const response = await this.generateWithSystemPrompt(
         SYSTEM_PROMPTS.INTENT_EXTRACTION,
         `User message: "${userMessage}"`,
@@ -106,8 +108,12 @@ class LLMService {
         LLM_CONFIGS.PRECISE
       );
 
+      logger.info(`GPT-4 raw response: ${response.content.substring(0, 500)}`);
+
       // Parse JSON response
       const parsed = JSON.parse(response.content);
+      
+      logger.info(`Parsed intent result: ${JSON.stringify(parsed)}`);
 
       return {
         intent: parsed.intent || ConversationIntent.GENERAL,
