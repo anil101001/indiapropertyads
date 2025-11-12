@@ -5,10 +5,17 @@ export const connectDatabase = async (): Promise<void> => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/india-property-ads';
     
+    // Log connection type (hide credentials)
+    const connectionType = mongoURI.includes('mongodb+srv://') ? 'MongoDB Atlas' : 
+                          mongoURI.includes('.docdb.amazonaws.com') ? 'AWS DocumentDB' :
+                          mongoURI.includes('localhost') ? 'Local MongoDB' : 'Unknown';
+    logger.info(`🔗 Connecting to ${connectionType}...`);
+    
     await mongoose.connect(mongoURI);
     
     logger.info('✅ MongoDB connected successfully');
     logger.info(`📦 Database: ${mongoose.connection.name}`);
+    logger.info(`🌍 Host: ${mongoose.connection.host}`);
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
