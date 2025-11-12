@@ -33,7 +33,3 @@ services:
         value: https://india-property-ads.netlify.app
       - key: CORS_ORIGIN
         value: https://india-property-ads.netlify.app
-      - key: RESEND_API_KEY
-        sync: false
-      - key: EMAIL_FROM
-        value: India Property Ads <contact@azentiq.ai>
