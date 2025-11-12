@@ -143,11 +143,16 @@ class ChatOrchestratorService {
    */
   private isPriceEstimationQuery(message: string): boolean {
     const lowerMessage = message.toLowerCase();
+    
+    // Patterns that indicate price estimation request
     const priceKeywords = [
       'price estimate',
       'estimate price',
       'property value',
       'property worth',
+      'worth in',
+      'worth of',
+      "what's worth",
       'how much',
       'what price',
       'price range',
@@ -155,10 +160,25 @@ class ChatOrchestratorService {
       'fair price',
       'valuation',
       'what should',
-      'cost estimate'
+      'cost estimate',
+      'should i pay',
+      'average price',
+      'typical price',
+      'going for',
+      'cost of'
     ];
 
-    return priceKeywords.some(keyword => lowerMessage.includes(keyword));
+    // Also check for patterns like "worth" near location/property terms
+    const worthPattern = /worth|value|price.*for|cost.*of|how much.*cost/;
+    const hasWorthPattern = worthPattern.test(lowerMessage);
+    
+    // Check if it's asking about price (not showing properties)
+    const isAskingAboutPrice = !lowerMessage.includes('show me') && 
+                               !lowerMessage.includes('find me') &&
+                               !lowerMessage.includes('looking for');
+
+    return (priceKeywords.some(keyword => lowerMessage.includes(keyword)) && isAskingAboutPrice) || 
+           (hasWorthPattern && isAskingAboutPrice);
   }
 
   /**
