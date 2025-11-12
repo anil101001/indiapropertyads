@@ -21,6 +21,9 @@ import { chatRoutes } from './ai-chat'; // AI Chat Module
 // Load environment variables with explicit path
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+// Import models to register them with Mongoose
+import './ai-chat/models/Conversation.model';
+
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
