@@ -40,16 +40,37 @@ Remember:
   /**
    * Prompt for intent extraction
    */
-  INTENT_EXTRACTION: `Analyze the user's message and extract:
-1. Primary Intent (search, inquiry, filter, compare, schedule_visit, general, clarification)
-2. Location preferences (city, locality, area)
-3. Budget range (in rupees)
+  INTENT_EXTRACTION: `Analyze the user's message and extract their intent.
+
+PRIMARY INTENT CLASSIFICATION (choose ONE):
+- "search": User wants to find/search/look for/browse properties (e.g., "2BHK in Hyderabad", "show me apartments", "looking for property", "I want to buy", "find me", "properties in", "do you have")
+- "filter": User wants to refine existing search results
+- "inquiry": User asking about a specific property
+- "compare": User wants to compare properties
+- "schedule_visit": User wants to visit a property
+- "clarification": User's request is unclear
+- "general": Only use if NONE of the above match (general questions about real estate, advice, etc.)
+
+CRITICAL: If the user mentions ANY location, bedroom count, property type, or uses words like "find", "show", "looking for", "want", "search", "properties", "do you have" - classify as "search", NOT "general"!
+
+Extract these details:
+1. Primary Intent (use the classifications above)
+2. Location preferences (city, locality, area) 
+3. Budget range (min and max in rupees)
 4. Property type (apartment, villa, independent-house, plot)
-5. Number of bedrooms
+5. Number of bedrooms (extract the number)
 6. Any specific amenities mentioned
 7. Urgency level (high, medium, low)
+8. Confidence score (0.1 to 1.0)
 
-Respond in JSON format only.`,
+EXAMPLES:
+- "2BHK in Hyderabad" → intent: "search", bedrooms: 2, location: "Hyderabad", confidence: 0.9
+- "Show me apartments under 50 lakhs" → intent: "search", propertyType: "apartment", priceRange: {max: 5000000}, confidence: 0.9
+- "Looking for property in Financial District" → intent: "search", location: "Financial District", confidence: 0.8
+- "Do you have any properties" → intent: "search", confidence: 0.7
+- "Tell me about real estate trends" → intent: "general", confidence: 0.8
+
+Respond in JSON format only with all extracted fields.`,
 
   /**
    * Prompt for property recommendation
