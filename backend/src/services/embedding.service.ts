@@ -1,13 +1,20 @@
 import OpenAI from 'openai';
 import logger from '../utils/logger';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-development'
-});
+// Lazy initialization of OpenAI client (created on first use, not at module load)
+let openaiClient: OpenAI | null = null;
 
-// Feature flag to enable/disable vectorization
-const VECTORIZATION_ENABLED = process.env.ENABLE_VECTORIZATION === 'true';
+const getOpenAIClient = (): OpenAI => {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-development'
+    });
+  }
+  return openaiClient;
+};
+
+// Feature flag to enable/disable vectorization (check at runtime, not module load time)
+const isVectorizationEnabled = () => process.env.ENABLE_VECTORIZATION === 'true';
 
 export interface EmbeddingResult {
   embedding: number[];
@@ -24,7 +31,7 @@ export const generatePropertyEmbedding = async (
   propertyData: any
 ): Promise<EmbeddingResult | null> => {
   // Check if feature is enabled
-  if (!VECTORIZATION_ENABLED) {
+  if (!isVectorizationEnabled()) {
     logger.info('Vectorization is disabled via feature flag');
     return null;
   }
@@ -36,6 +43,8 @@ export const generatePropertyEmbedding = async (
   }
 
   try {
+    logger.info('Generating property embedding...');
+    
     // Combine relevant property fields for embedding
     const textToEmbed = buildEmbeddingText(propertyData);
     
@@ -45,7 +54,7 @@ export const generatePropertyEmbedding = async (
     }
 
     // Generate embedding using OpenAI
-    const response = await openai.embeddings.create({
+    const response = await getOpenAIClient().embeddings.create({
       model: 'text-embedding-3-small',
       input: textToEmbed,
       dimensions: 1536 // Can be reduced to 512 or 256 for storage savings
@@ -73,25 +82,32 @@ export const generatePropertyEmbedding = async (
  * @returns Embedding vector or null
  */
 export const generateQueryEmbedding = async (query: string): Promise<number[] | null> => {
-  if (!VECTORIZATION_ENABLED) {
+  if (!isVectorizationEnabled()) {
+    logger.warn('Query embedding skipped: VECTORIZATION_ENABLED is false');
     return null;
   }
 
   if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy-key-for-development') {
+    logger.warn('Query embedding skipped: OPENAI_API_KEY not set or is dummy key');
     return null;
   }
 
   try {
-    const response = await openai.embeddings.create({
+    logger.info(`Generating query embedding for: "${query.substring(0, 50)}..."`);
+    const response = await getOpenAIClient().embeddings.create({
       model: 'text-embedding-3-small',
       input: query,
       dimensions: 1536
     });
 
+    logger.info(`Query embedding generated: ${response.data[0].embedding.length} dimensions`);
     return response.data[0].embedding;
 
   } catch (error: any) {
     logger.error('Error generating query embedding:', error.message);
+    if (error.response) {
+      logger.error('OpenAI API response:', error.response.data);
+    }
     return null;
   }
 };
