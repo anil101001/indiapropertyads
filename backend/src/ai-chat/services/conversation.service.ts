@@ -152,18 +152,27 @@ class ConversationService {
         throw new Error('Conversation not found');
       }
 
-      // Filter out undefined values to avoid validation errors
-      const validPreferences = Object.entries(preferences).reduce((acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as any);
+      // Ensure userPreferences exists
+      if (!conversation.userPreferences) {
+        conversation.userPreferences = {} as any;
+      }
 
-      conversation.userPreferences = {
-        ...conversation.userPreferences,
-        ...validPreferences
-      };
+      // Update only defined preferences individually to avoid validation errors
+      if (preferences.location !== undefined) {
+        conversation.userPreferences.location = preferences.location;
+      }
+      if (preferences.budget !== undefined) {
+        conversation.userPreferences.budget = preferences.budget;
+      }
+      if (preferences.propertyType !== undefined) {
+        conversation.userPreferences.propertyType = preferences.propertyType;
+      }
+      if (preferences.bedrooms !== undefined) {
+        conversation.userPreferences.bedrooms = preferences.bedrooms;
+      }
+      if (preferences.amenities !== undefined) {
+        conversation.userPreferences.amenities = preferences.amenities;
+      }
 
       await conversation.save();
 
