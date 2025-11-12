@@ -65,7 +65,6 @@ const cityData = {
 };
 
 const propertyTypes = ['apartment', 'villa', 'independent-house'] as const;
-const bedroomOptions = [1, 2, 3, 4, 5];
 const amenitiesList = [
   'Swimming Pool', 'Gymnasium', 'Club House', '24/7 Security', 'Lift', 
   'Power Backup', 'Children Play Area', 'Parking', 'Garden', 'Intercom',
@@ -238,23 +237,94 @@ const seedDatabase = async () => {
     await mongoose.connect(process.env.MONGODB_URI || '');
     console.log('✅ Connected\n');
 
-    // Get or create test user
-    console.log('👤 Getting test user...');
-    let testUser = await User.findOne({ email: 'test@example.com' });
+    // Create test users with different roles
+    console.log('👥 Creating test users...\n');
     
-    if (!testUser) {
-      testUser = await User.create({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'test123',
+    const testUsers = [
+      {
+        email: 'admin@indiapropertyads.com',
+        password: 'admin12345678',
+        phone: '9999999999',
+        role: 'admin',
+        name: 'Admin User'
+      },
+      {
+        email: 'owner1@example.com',
+        password: 'owner12345678',
         phone: '9876543210',
-        role: 'user',
-        isVerified: true
-      });
-      console.log('✅ Test user created\n');
-    } else {
-      console.log('✅ Test user found\n');
+        role: 'owner',
+        name: 'Rajesh Kumar'
+      },
+      {
+        email: 'owner2@example.com',
+        password: 'owner12345678',
+        phone: '9876543211',
+        role: 'owner',
+        name: 'Priya Sharma'
+      },
+      {
+        email: 'owner3@example.com',
+        password: 'owner12345678',
+        phone: '9876543212',
+        role: 'owner',
+        name: 'Amit Patel'
+      },
+      {
+        email: 'agent1@example.com',
+        password: 'agent12345678',
+        phone: '9876543213',
+        role: 'agent',
+        name: 'Neha Reddy'
+      },
+      {
+        email: 'agent2@example.com',
+        password: 'agent12345678',
+        phone: '9876543214',
+        role: 'agent',
+        name: 'Vikram Singh'
+      },
+      {
+        email: 'buyer@example.com',
+        password: 'buyer12345678',
+        phone: '9876543215',
+        role: 'buyer',
+        name: 'Arun Gupta'
+      }
+    ];
+
+    const createdUsers: any[] = [];
+    
+    for (const userData of testUsers) {
+      let user = await User.findOne({ email: userData.email });
+      
+      if (!user) {
+        user = await User.create({
+          email: userData.email,
+          password: userData.password,
+          phone: userData.phone,
+          role: userData.role as 'buyer' | 'owner' | 'agent' | 'admin',
+          profile: {
+            name: userData.name
+          },
+          verification: {
+            emailVerified: true,
+            phoneVerified: true
+          },
+          isActive: true
+        });
+        console.log(`✅ Created ${userData.role}: ${userData.name}`);
+      } else {
+        console.log(`✓ Found ${userData.role}: ${userData.name}`);
+      }
+      
+      createdUsers.push(user);
     }
+
+    console.log(`\n📊 Total users: ${createdUsers.length}`);
+    console.log('   1 Admin, 3 Owners, 2 Agents, 1 Buyer\n');
+    
+    // Get owner users for distributing properties
+    const owners = createdUsers.filter(u => u.role === 'owner');
 
     console.log('📦 Generating properties...\n');
 
@@ -265,7 +335,8 @@ const seedDatabase = async () => {
       const area = cityData.hyderabad.areas[i];
       const type = i < 6 ? 'apartment' : i < 8 ? 'villa' : 'independent-house';
       const bedrooms = [2, 2, 3, 3, 2, 4, 3, 4, 3, 2][i];
-      properties.push(generateProperty('hyderabad', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length]; // Distribute among owners
+      properties.push(generateProperty('hyderabad', area, type, bedrooms, owner._id));
     }
 
     // Bangalore - 10 properties
@@ -273,7 +344,8 @@ const seedDatabase = async () => {
       const area = cityData.bangalore.areas[i];
       const type = i < 7 ? 'apartment' : i < 9 ? 'villa' : 'independent-house';
       const bedrooms = [2, 3, 2, 3, 4, 2, 3, 4, 3, 2][i];
-      properties.push(generateProperty('bangalore', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('bangalore', area, type, bedrooms, owner._id));
     }
 
     // Mumbai - 8 properties
@@ -281,7 +353,8 @@ const seedDatabase = async () => {
       const area = cityData.mumbai.areas[i];
       const type = i < 6 ? 'apartment' : 'villa';
       const bedrooms = [2, 3, 2, 3, 4, 2, 3, 4][i];
-      properties.push(generateProperty('mumbai', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('mumbai', area, type, bedrooms, owner._id));
     }
 
     // Delhi NCR - 7 properties
@@ -289,7 +362,8 @@ const seedDatabase = async () => {
       const area = cityData.delhi.areas[i];
       const type = i < 5 ? 'apartment' : 'independent-house';
       const bedrooms = [2, 3, 2, 3, 4, 3, 4][i];
-      properties.push(generateProperty('delhi', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('delhi', area, type, bedrooms, owner._id));
     }
 
     // Pune - 5 properties
@@ -297,7 +371,8 @@ const seedDatabase = async () => {
       const area = cityData.pune.areas[i];
       const type = i < 4 ? 'apartment' : 'villa';
       const bedrooms = [2, 3, 2, 3, 4][i];
-      properties.push(generateProperty('pune', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('pune', area, type, bedrooms, owner._id));
     }
 
     // Chennai - 5 properties
@@ -305,7 +380,8 @@ const seedDatabase = async () => {
       const area = cityData.chennai.areas[i];
       const type = i < 4 ? 'apartment' : 'independent-house';
       const bedrooms = [2, 3, 2, 3, 4][i];
-      properties.push(generateProperty('chennai', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('chennai', area, type, bedrooms, owner._id));
     }
 
     // Kolkata - 3 properties
@@ -313,7 +389,8 @@ const seedDatabase = async () => {
       const area = cityData.kolkata.areas[i];
       const type = 'apartment';
       const bedrooms = [2, 3, 2][i];
-      properties.push(generateProperty('kolkata', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('kolkata', area, type, bedrooms, owner._id));
     }
 
     // Ahmedabad - 2 properties
@@ -321,7 +398,8 @@ const seedDatabase = async () => {
       const area = cityData.ahmedabad.areas[i];
       const type = 'apartment';
       const bedrooms = [2, 3][i];
-      properties.push(generateProperty('ahmedabad', area, type, bedrooms, testUser._id));
+      const owner = owners[i % owners.length];
+      properties.push(generateProperty('ahmedabad', area, type, bedrooms, owner._id));
     }
 
     // Insert all properties
