@@ -127,7 +127,8 @@ class PropertySearchService {
       const searchRegex = new RegExp(query, 'i');
       
       const searchQuery: any = {
-        status: 'approved',
+        // Include all statuses for AI chat (not just approved)
+        // status: 'approved',
         $or: [
           { title: searchRegex },
           { description: searchRegex },
@@ -280,7 +281,8 @@ class PropertySearchService {
    */
   private buildMatchFilters(filters: Partial<UserPreferences>): any {
     const matchFilters: any = {
-      status: 'approved'
+      // Include all statuses for AI chat
+      // status: 'approved'
     };
 
     // Location filters
