@@ -21,15 +21,20 @@ class PropertySearchService {
     try {
       // Try vector search first
       if (process.env.ENABLE_VECTORIZATION === 'true') {
-        const vectorResults = await this.vectorSearch(query, filters, limit);
-        if (vectorResults.properties.length > 0) {
-          logger.info(`Vector search returned ${vectorResults.properties.length} results`);
-          return vectorResults;
+        logger.info('Attempting vector search...');
+        try {
+          const vectorResults = await this.vectorSearch(query, filters, limit);
+          logger.info(`Vector search completed: ${vectorResults.properties.length} results`);
+          if (vectorResults.properties.length > 0) {
+            return vectorResults;
+          }
+        } catch (vectorError: any) {
+          logger.warn('Vector search failed, falling back to text search:', vectorError.message);
         }
       }
 
       // Fallback to regular search
-      logger.info('Falling back to text search');
+      logger.info('Using text search');
       return await this.textSearch(query, filters, limit);
 
     } catch (error: any) {
@@ -135,10 +140,17 @@ class PropertySearchService {
       // Apply filters
       Object.assign(searchQuery, this.buildMatchFilters(filters));
 
+      logger.info(`Text search query: ${JSON.stringify(searchQuery).substring(0, 200)}`);
+
       const properties = await Property.find(searchQuery)
         .select('-embedding -embeddingMetadata')
         .limit(limit)
         .sort({ createdAt: -1 });
+
+      logger.info(`Text search found ${properties.length} properties`);
+      if (properties.length > 0) {
+        logger.info(`First property title: ${properties[0].title}`);
+      }
 
       return {
         properties,

@@ -52,14 +52,8 @@ async function vectorizeAllProperties() {
     // Find properties that need vectorization
     console.log('🔍 Finding properties to vectorize...');
     
-    // Option 1: Vectorize all properties without embeddings
-    const query = { embedding: { $exists: false } };
-    
-    // Option 2: Re-vectorize all (uncomment to force update)
-    // const query = {};
-    
-    // Option 3: Vectorize only approved properties
-    // const query = { embedding: { $exists: false }, status: 'approved' };
+    // Re-vectorize ALL properties (forced update)
+    const query = {};
     
     const properties = await Property.find(query);
     stats.total = properties.length;
