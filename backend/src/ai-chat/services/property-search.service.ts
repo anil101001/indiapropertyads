@@ -86,6 +86,7 @@ class PropertySearchService {
       // Add filters
       const matchFilters = this.buildMatchFilters(filters);
       if (Object.keys(matchFilters).length > 0) {
+        logger.info(`Applying match filters: ${JSON.stringify(matchFilters)}`);
         pipeline.push({ $match: matchFilters });
       }
 
@@ -100,7 +101,9 @@ class PropertySearchService {
       // Limit results
       pipeline.push({ $limit: limit });
 
+      logger.info(`Running vector search with ${pipeline.length} pipeline stages`);
       const properties = await Property.aggregate(pipeline);
+      logger.info(`Vector search returned ${properties.length} properties`);
 
       return {
         properties,
