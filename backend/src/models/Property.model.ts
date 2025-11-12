@@ -7,6 +7,14 @@ export interface IProperty extends Document {
   listingType: 'sale' | 'rent';
   plotType?: 'gated-community' | 'independent'; // Only for plots
   
+  // Vector Search (AI/ML)
+  embedding?: number[]; // 1536-dimensional vector for semantic search
+  embeddingMetadata?: {
+    model: string; // e.g., 'text-embedding-3-small'
+    generatedAt: Date;
+    textUsed: string; // What text was vectorized
+  };
+  
   // Methods
   isOwner(userId: string): boolean;
   incrementViews(): Promise<void>;
@@ -299,6 +307,18 @@ const PropertySchema = new Schema<IProperty>(
         type: Number,
         default: 0
       }
+    },
+    
+    // Vector Search (AI/ML) - Optional for backwards compatibility
+    embedding: {
+      type: [Number],
+      required: false,
+      select: false // Don't return in queries by default (large array)
+    },
+    embeddingMetadata: {
+      model: String,
+      generatedAt: Date,
+      textUsed: String
     },
     
     // Timestamps
