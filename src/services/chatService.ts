@@ -17,7 +17,9 @@ export const sendMessage = async (
     message,
     conversationId
   });
-  return response.data;
+  // api.post returns the full response body: { success, data }
+  // We need to return the inner data object which contains { reply, conversationId, etc }
+  return response.data || response;
 };
 
 /**

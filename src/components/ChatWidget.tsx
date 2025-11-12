@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, X, Send, Loader2, AlertCircle, Copy, Check } from 'lucide-react';
 import ChatMessage from './chat/ChatMessage';
 import { ChatMessage as ChatMessageType, ChatStatus } from '../types/chat';
 import { sendMessage as sendChatMessage, checkChatHealth } from '../services/chatService';
@@ -17,6 +17,7 @@ const ChatWidget: React.FC = () => {
   const [status, setStatus] = useState<ChatStatus>('idle');
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [isAvailable, setIsAvailable] = useState(true);
+  const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -79,23 +80,31 @@ const ChatWidget: React.FC = () => {
 
     try {
       const response = await sendChatMessage(inputValue.trim(), conversationId);
+      
+      console.log('Chat response received:', response);
+      
+      // Handle response structure: { success, data: { reply, conversationId, ... } }
+      const chatData = (response as any).data || response;
+      console.log('Chat data:', chatData);
+      console.log('Reply content:', chatData.reply);
 
       // Update conversation ID
-      if (response.conversationId) {
-        setConversationId(response.conversationId);
+      if (chatData.conversationId) {
+        setConversationId(chatData.conversationId);
       }
 
       // Add assistant response
       const assistantMessage: ChatMessageType = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: response.reply,
+        content: chatData.reply || 'No response',
         timestamp: new Date(),
-        properties: response.properties,
-        suggestedQuestions: response.suggestedQuestions,
-        metadata: response.metadata
+        properties: chatData.properties,
+        suggestedQuestions: chatData.suggestedQuestions,
+        metadata: chatData.metadata
       };
 
+      console.log('Assistant message created:', assistantMessage);
       setMessages((prev) => [...prev, assistantMessage]);
       setStatus('idle');
     } catch (error: any) {
@@ -123,6 +132,23 @@ const ChatWidget: React.FC = () => {
   const handlePropertyClick = (propertyId: string) => {
     navigate(`/properties/${propertyId}`);
     setIsOpen(false);
+  };
+
+  const handleCopyChat = async () => {
+    try {
+      const chatText = messages
+        .map((msg) => {
+          const role = msg.role === 'user' ? 'You' : 'AI Assistant';
+          return `${role}: ${msg.content}`;
+        })
+        .join('\n\n');
+      
+      await navigator.clipboard.writeText(chatText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy chat:', error);
+    }
   };
 
   const handleQuestionClick = (question: string) => {
@@ -163,12 +189,26 @@ const ChatWidget: React.FC = () => {
                 <p className="text-xs text-blue-100">Powered by GPT-4</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-white hover:bg-blue-700 dark:hover:bg-blue-800 p-1 rounded transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyChat}
+                className="text-white hover:bg-blue-700 dark:hover:bg-blue-800 p-1 rounded transition-colors"
+                title="Copy chat to clipboard"
+              >
+                {copied ? (
+                  <Check className="w-5 h-5 text-green-300" />
+                ) : (
+                  <Copy className="w-5 h-5" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-white hover:bg-blue-700 dark:hover:bg-blue-800 p-1 rounded transition-colors"
+                title="Close chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
