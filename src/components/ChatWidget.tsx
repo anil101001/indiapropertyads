@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, X, Send, Loader2, AlertCircle } from 'lucide-react';
 import ChatMessage from './chat/ChatMessage';
 import { ChatMessage as ChatMessageType, ChatStatus } from '../types/chat';
 import { sendMessage as sendChatMessage, checkChatHealth } from '../services/chatService';
@@ -28,7 +28,8 @@ const ChatWidget: React.FC = () => {
         setIsAvailable(health.features.llm && health.features.vectorization);
       })
       .catch(() => {
-        setIsAvailable(false);
+        // Show button even if health check fails - let users try
+        setIsAvailable(true);
       });
   }, []);
 
@@ -155,11 +156,11 @@ const ChatWidget: React.FC = () => {
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 dark:bg-blue-700 rounded-t-lg">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
+                <Bot className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Property Assistant</h3>
-                <p className="text-xs text-blue-100">Powered by AI</p>
+                <h3 className="font-semibold text-white">AI Property Assistant</h3>
+                <p className="text-xs text-blue-100">Powered by GPT-4</p>
               </div>
             </div>
             <button
@@ -236,13 +237,14 @@ const ChatWidget: React.FC = () => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50"
-        aria-label="Open chat"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-50 animate-pulse hover:animate-none"
+        aria-label="Open AI chat"
+        title="AI Property Assistant"
       >
         {isOpen ? (
-          <X className="w-6 h-6" />
+          <X className="w-7 h-7" />
         ) : (
-          <MessageCircle className="w-6 h-6" />
+          <Bot className="w-8 h-8" />
         )}
       </button>
     </>
