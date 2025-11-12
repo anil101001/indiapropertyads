@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import VoiceAgent from './VoiceAgent';
+import ChatWidget from './ChatWidget';
 
 export default function Layout() {
   const location = useLocation();
@@ -24,6 +25,7 @@ export default function Layout() {
       </main>
       <Footer />
       <VoiceAgent context={getContext()} />
+      <ChatWidget />
     </div>
   );
 }
