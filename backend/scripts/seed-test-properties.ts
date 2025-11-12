@@ -12,6 +12,34 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 import Property from '../src/models/Property.model';
 import User from '../src/models/User.model';
 
+/**
+ * Generate random property images using Unsplash
+ * Categories: apartment, house, villa, modern-home
+ */
+const generatePropertyImages = (propertyType: string, count: number = 3) => {
+  const imageQueries: Record<string, string> = {
+    'apartment': 'apartment-interior',
+    'villa': 'luxury-villa',
+    'independent-house': 'modern-house',
+    'plot': 'real-estate-land'
+  };
+
+  const query = imageQueries[propertyType] || 'modern-home';
+  const images = [];
+
+  for (let i = 0; i < count; i++) {
+    const randomId = Math.floor(Math.random() * 1000);
+    images.push({
+      url: `https://source.unsplash.com/800x600/?${query}&sig=${randomId}`,
+      key: `unsplash-${query}-${randomId}`,
+      isCover: i === 0, // First image is cover
+      order: i
+    });
+  }
+
+  return images;
+};
+
 const sampleProperties = [
   // Hyderabad Properties
   {
@@ -44,7 +72,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 3000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -79,7 +106,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 5000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -114,7 +140,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 2000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -151,7 +176,6 @@ const sampleProperties = [
       priceNegotiable: false,
       maintenanceCharges: 3500
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -184,7 +208,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 8000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -221,7 +244,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 4000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -256,7 +278,6 @@ const sampleProperties = [
       priceNegotiable: false,
       maintenanceCharges: 6000
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -293,7 +314,6 @@ const sampleProperties = [
       priceNegotiable: true,
       maintenanceCharges: 2500
     },
-    images: [],
     status: 'approved',
     verified: true,
     stats: { views: 0, inquiries: 0, favorites: 0 }
@@ -332,15 +352,20 @@ const seedDatabase = async () => {
 
     // Add properties
     for (const propData of sampleProperties) {
+      // Generate random images for this property
+      const propertyImages = generatePropertyImages(propData.propertyType, 3);
+      
       const property = await Property.create({
         ...propData,
+        images: propertyImages,
         owner: testUser._id,
         publishedAt: new Date()
       });
       
       console.log(`✅ Added: ${property.title}`);
       console.log(`   Price: ₹${(property.pricing.expectedPrice / 100000).toFixed(2)} lakhs`);
-      console.log(`   Location: ${property.address.city}\n`);
+      console.log(`   Location: ${property.address.city}`);
+      console.log(`   Images: ${propertyImages.length} random photos\n`);
     }
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
