@@ -152,9 +152,17 @@ class ConversationService {
         throw new Error('Conversation not found');
       }
 
+      // Filter out undefined values to avoid validation errors
+      const validPreferences = Object.entries(preferences).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as any);
+
       conversation.userPreferences = {
         ...conversation.userPreferences,
-        ...preferences
+        ...validPreferences
       };
 
       await conversation.save();
