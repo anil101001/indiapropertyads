@@ -187,19 +187,20 @@ function formatPrice(price: number): string {
  */
 export const LLM_CONFIGS = {
   DEFAULT: {
-    model: process.env.OPENAI_MODEL || 'gpt-4',
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.3'),
     maxTokens: 500
   },
-  CREATIVE: {
-    model: 'gpt-4',
-    temperature: 0.7,
-    maxTokens: 600
-  },
   PRECISE: {
-    model: 'gpt-4',
+    // Use GPT-4o-mini for structured tasks like intent extraction - faster and more consistent
+    model: 'gpt-4o-mini',
     temperature: 0.1,
     maxTokens: 300
+  },
+  CREATIVE: {
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    temperature: 0.7,
+    maxTokens: 800
   },
   FAST: {
     model: 'gpt-3.5-turbo',
