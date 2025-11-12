@@ -372,21 +372,18 @@ class ChatOrchestratorService {
 
   /**
    * Check for missing search criteria
+   * Only require location - everything else is optional for a basic search
    */
   private getMissingSearchCriteria(filters: Partial<UserPreferences>): string[] {
     const missing: string[] = [];
 
+    // Only require location - user can search without budget or bedrooms
     if (!filters.location?.city) {
       missing.push('location/city');
     }
 
-    if (!filters.budget?.max && !filters.budget?.min) {
-      missing.push('budget range');
-    }
-
-    if (!filters.bedrooms) {
-      missing.push('number of bedrooms');
-    }
+    // Optional: Don't block search if budget is missing
+    // Optional: Don't block search if bedrooms is missing
 
     return missing;
   }
