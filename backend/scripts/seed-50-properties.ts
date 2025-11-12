@@ -243,49 +243,49 @@ const seedDatabase = async () => {
     const testUsers = [
       {
         email: 'admin@indiapropertyads.com',
-        password: 'admin12345678',
+        password: 'Admin@12345678',
         phone: '9999999999',
         role: 'admin',
         name: 'Admin User'
       },
       {
         email: 'owner1@example.com',
-        password: 'owner12345678',
+        password: 'Owner@12345678',
         phone: '9876543210',
         role: 'owner',
         name: 'Rajesh Kumar'
       },
       {
         email: 'owner2@example.com',
-        password: 'owner12345678',
+        password: 'Owner@12345678',
         phone: '9876543211',
         role: 'owner',
         name: 'Priya Sharma'
       },
       {
         email: 'owner3@example.com',
-        password: 'owner12345678',
+        password: 'Owner@12345678',
         phone: '9876543212',
         role: 'owner',
         name: 'Amit Patel'
       },
       {
         email: 'agent1@example.com',
-        password: 'agent12345678',
+        password: 'Agent@12345678',
         phone: '9876543213',
         role: 'agent',
         name: 'Neha Reddy'
       },
       {
         email: 'agent2@example.com',
-        password: 'agent12345678',
+        password: 'Agent@12345678',
         phone: '9876543214',
         role: 'agent',
         name: 'Vikram Singh'
       },
       {
         email: 'buyer@example.com',
-        password: 'buyer12345678',
+        password: 'Buyer@12345678',
         phone: '9876543215',
         role: 'buyer',
         name: 'Arun Gupta'
