@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, authorize, optionalAuthenticate } from '../middleware/auth.middleware';
+import { vectorizePropertySync, reVectorizeIfNeeded } from '../middleware/vectorization.middleware';
 import {
   createProperty,
   getProperties,
@@ -18,9 +19,11 @@ router.get('/', optionalAuthenticate, getProperties);
 router.get('/:id', getPropertyById);
 
 // Protected routes - require authentication
-router.post('/', authenticate, authorize('owner', 'agent'), createProperty);
+// Auto-vectorize new properties on creation
+router.post('/', authenticate, authorize('owner', 'agent'), vectorizePropertySync, createProperty);
 router.get('/my/properties', authenticate, getMyProperties);
-router.patch('/:id', authenticate, updateProperty);
+// Re-vectorize if critical fields change on update
+router.patch('/:id', authenticate, reVectorizeIfNeeded, updateProperty);
 router.delete('/:id', authenticate, deleteProperty);
 router.patch('/:id/mark-sold', authenticate, markPropertySold);
 

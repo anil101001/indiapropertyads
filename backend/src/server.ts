@@ -15,6 +15,7 @@ import propertyRoutes from './routes/property.routes';
 import uploadRoutes from './routes/upload.routes';
 import inquiryRoutes from './routes/inquiry.routes';
 import insightsRoutes from './routes/insights.routes';
+import searchRoutes from './routes/search.routes'; // Vector Search
 import { chatRoutes } from './ai-chat'; // AI Chat Module
 
 // Load environment variables with explicit path
@@ -60,6 +61,7 @@ app.use(`${API_PREFIX}/properties`, propertyRoutes);
 app.use(`${API_PREFIX}/upload`, uploadRoutes);
 app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 app.use(`${API_PREFIX}/insights`, insightsRoutes);
+app.use(`${API_PREFIX}/search`, searchRoutes); // Vector Search
 app.use(`${API_PREFIX}/ai-chat`, chatRoutes); // AI Chat Module
 
 // 404 Handler
