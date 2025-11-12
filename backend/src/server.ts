@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import { rateLimiter } from './middleware/rateLimiter';
@@ -16,8 +17,8 @@ import inquiryRoutes from './routes/inquiry.routes';
 import insightsRoutes from './routes/insights.routes';
 import { chatRoutes } from './ai-chat'; // AI Chat Module
 
-// Load environment variables
-dotenv.config();
+// Load environment variables with explicit path
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;

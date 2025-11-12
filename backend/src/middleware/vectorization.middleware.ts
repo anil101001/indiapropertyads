@@ -13,7 +13,7 @@ import logger from '../utils/logger';
  */
 export const vectorizeProperty = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -68,7 +68,7 @@ export const vectorizeProperty = async (
  */
 export const vectorizePropertySync = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -107,7 +107,7 @@ export const vectorizePropertySync = async (
  */
 export const reVectorizeIfNeeded = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {

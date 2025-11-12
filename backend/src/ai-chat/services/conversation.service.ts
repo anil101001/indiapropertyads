@@ -5,7 +5,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import Conversation, { IConversation } from '../models/Conversation.model';
-import { ChatMessage, UserPreferences, ConversationContext } from '../types/chat.types';
+import { ChatMessage, UserPreferences } from '../types/chat.types';
 import { CONVERSATION_CONFIG } from '../config/prompts';
 import logger from '../../utils/logger';
 

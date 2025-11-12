@@ -10,23 +10,25 @@ import logger from '../../utils/logger';
 
 class LLMService {
   private client: OpenAI | null = null;
-  private enabled: boolean;
+  private clientInitialized: boolean = false;
 
-  constructor() {
-    this.enabled = process.env.ENABLE_VECTORIZATION === 'true' && !!process.env.OPENAI_API_KEY;
-    
-    if (this.enabled) {
+  /**
+   * Lazy initialization of OpenAI client
+   */
+  private initializeClient(): void {
+    if (!this.clientInitialized && this.isEnabled()) {
       this.client = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY
       });
+      this.clientInitialized = true;
     }
   }
 
   /**
-   * Check if LLM service is available
+   * Check if LLM service is available (checks env vars dynamically)
    */
   isEnabled(): boolean {
-    return this.enabled;
+    return process.env.ENABLE_VECTORIZATION === 'true' && !!process.env.OPENAI_API_KEY;
   }
 
   /**
@@ -36,8 +38,14 @@ class LLMService {
     messages: ChatMessage[],
     config: LLMConfig = LLM_CONFIGS.DEFAULT
   ): Promise<{ content: string; tokensUsed: number }> {
-    if (!this.enabled || !this.client) {
+    if (!this.isEnabled()) {
       throw new Error('LLM service is not enabled. Set ENABLE_VECTORIZATION=true and configure OPENAI_API_KEY');
+    }
+
+    this.initializeClient();
+
+    if (!this.client) {
+      throw new Error('Failed to initialize OpenAI client');
     }
 
     try {
@@ -203,8 +211,14 @@ class LLMService {
    * Generate embeddings for text (reuse from existing embedding service)
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    if (!this.enabled || !this.client) {
+    if (!this.isEnabled()) {
       throw new Error('LLM service is not enabled');
+    }
+
+    this.initializeClient();
+
+    if (!this.client) {
+      throw new Error('Failed to initialize OpenAI client');
     }
 
     try {
