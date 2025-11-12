@@ -43,12 +43,20 @@ class ChatOrchestratorService {
 
       // Update user preferences based on extracted data
       if (intentAnalysis.extractedData && Object.keys(intentAnalysis.extractedData).length > 0) {
-        const preferences = this.buildPreferencesFromIntent(intentAnalysis.extractedData);
-        await conversationService.updatePreferences(
-          conversation.conversationId,
-          request.userId,
-          preferences
-        );
+        try {
+          const preferences = this.buildPreferencesFromIntent(intentAnalysis.extractedData);
+          // Only update if we have valid preferences
+          if (Object.keys(preferences).length > 0) {
+            await conversationService.updatePreferences(
+              conversation.conversationId,
+              request.userId,
+              preferences
+            );
+          }
+        } catch (error: any) {
+          // Log but don't fail the chat if preferences update fails
+          logger.warn('Failed to update preferences, continuing anyway:', error.message);
+        }
       }
 
       // Get conversation history for context

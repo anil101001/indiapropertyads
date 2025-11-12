@@ -158,20 +158,22 @@ class ConversationService {
       }
 
       // Update only defined preferences individually to avoid validation errors
-      if (preferences.location !== undefined) {
-        conversation.userPreferences.location = preferences.location;
+      const prefs = conversation.userPreferences;
+      
+      if (preferences.location !== undefined && prefs) {
+        prefs.location = preferences.location;
       }
-      if (preferences.budget !== undefined) {
-        conversation.userPreferences.budget = preferences.budget;
+      if (preferences.budget !== undefined && prefs) {
+        prefs.budget = preferences.budget;
       }
-      if (preferences.propertyType !== undefined) {
-        conversation.userPreferences.propertyType = preferences.propertyType;
+      if (preferences.propertyType !== undefined && prefs) {
+        prefs.propertyType = preferences.propertyType;
       }
-      if (preferences.bedrooms !== undefined) {
-        conversation.userPreferences.bedrooms = preferences.bedrooms;
+      if (preferences.bedrooms !== undefined && prefs) {
+        prefs.bedrooms = preferences.bedrooms;
       }
-      if (preferences.amenities !== undefined) {
-        conversation.userPreferences.amenities = preferences.amenities;
+      if (preferences.amenities !== undefined && prefs) {
+        prefs.amenities = preferences.amenities;
       }
 
       await conversation.save();
