@@ -13,11 +13,11 @@ export const sendMessage = async (
   message: string,
   conversationId?: string
 ): Promise<ChatResponse> => {
-  const response = await api.post('/ai-chat/message', {
+  const response: any = await api.post('/ai-chat/message', {
     message,
     conversationId
   });
-  return response.data.data;
+  return response.data;
 };
 
 /**
@@ -27,10 +27,10 @@ export const getConversations = async (
   limit: number = 10,
   status: 'active' | 'closed' | 'archived' = 'active'
 ): Promise<Conversation[]> => {
-  const response = await api.get('/ai-chat/conversations', {
+  const response: any = await api.get('/ai-chat/conversations', {
     params: { limit, status }
   });
-  return response.data.data;
+  return response.data;
 };
 
 /**
@@ -39,8 +39,8 @@ export const getConversations = async (
 export const getConversation = async (
   conversationId: string
 ): Promise<Conversation> => {
-  const response = await api.get(`/ai-chat/conversations/${conversationId}`);
-  return response.data.data;
+  const response: any = await api.get(`/ai-chat/conversations/${conversationId}`);
+  return response.data;
 };
 
 /**
@@ -56,18 +56,18 @@ export const closeConversation = async (
  * Get trending properties (for initial suggestions)
  */
 export const getTrendingProperties = async (limit: number = 5) => {
-  const response = await api.get('/ai-chat/properties/trending', {
+  const response: any = await api.get('/ai-chat/properties/trending', {
     params: { limit }
   });
-  return response.data.data;
+  return response.data;
 };
 
 /**
  * Check if chat service is available
  */
 export const checkChatHealth = async () => {
-  const response = await api.get('/ai-chat/health');
-  return response.data;
+  const response: any = await api.get('/ai-chat/health');
+  return response;
 };
 
 export default {
