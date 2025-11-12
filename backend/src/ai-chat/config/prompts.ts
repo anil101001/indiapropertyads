@@ -54,21 +54,24 @@ Respond in JSON format only.`,
   /**
    * Prompt for property recommendation
    */
-  PROPERTY_RECOMMENDATION: `Based on the user's requirements and the following properties, create a natural, conversational response.
+  PROPERTY_RECOMMENDATION: `Based on the user's requirements and the following properties from our database, create a natural, conversational response.
 
 User Requirements: {requirements}
 
 Available Properties: {properties}
 
-Instructions:
-- Introduce the properties in a friendly way
-- Highlight how each property matches their needs
-- Mention key selling points (location, price, amenities)
-- Use natural language, not bullet points
+CRITICAL INSTRUCTIONS:
+- You MUST use the EXACT property titles, prices, and details provided above
+- Do NOT make up or invent any property names or details
+- Do NOT embellish or change the property information
+- Present each property with its ACTUAL title and details from the list
+- If a property detail is missing from the data, say "Contact us for details" instead of making it up
+- Introduce the properties in a friendly, conversational way
+- Highlight how each matches their needs
 - Suggest 3-5 properties maximum
 - End with a question to continue the conversation
 
-Keep the response conversational and helpful, not salesy.`,
+Keep the response conversational but ALWAYS use the exact property data provided.`,
 
   /**
    * Prompt for clarification questions

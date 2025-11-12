@@ -39,12 +39,17 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
 
     logger.info(`Chat message from user ${userId}: "${message.substring(0, 50)}..."`);
 
+    logger.info('About to call orchestrator processMessage');
+    
     // Process message through orchestrator
     const response = await chatOrchestratorService.processMessage({
       message: message.trim(),
       userId,
       conversationId
     });
+
+    logger.info('Orchestrator returned response, sending to client');
+    logger.info('Response content:', JSON.stringify(response).substring(0, 200));
 
     res.json({
       success: true,

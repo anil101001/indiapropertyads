@@ -16,6 +16,8 @@ class ChatOrchestratorService {
    */
   async processMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
+      logger.info(`Processing message from user ${request.userId}`);
+
       // Check if LLM is enabled
       if (!llmService.isEnabled()) {
         return {
@@ -30,13 +32,17 @@ class ChatOrchestratorService {
         request.userId,
         request.conversationId
       );
+      logger.info('Conversation retrieved/created');
 
       // Add user message to conversation
       await conversationService.addMessage(conversation.conversationId, request.userId, {
         role: 'user',
         content: request.message
       });
+      logger.info('User message added successfully');
 
+      logger.info('About to extract intent from message');
+      
       // Extract user intent
       const intentAnalysis = await llmService.extractIntent(request.message);
       logger.info(`Intent detected: ${intentAnalysis.intent} (confidence: ${intentAnalysis.confidence})`);
@@ -178,6 +184,11 @@ class ChatOrchestratorService {
         filters,
         5
       );
+
+      logger.info(`Property search found ${searchResults.properties.length} properties`);
+      if (searchResults.properties.length > 0) {
+        logger.info(`First property: ${searchResults.properties[0].title}`);
+      }
 
       // If no results, generate "no results" response
       if (searchResults.properties.length === 0) {
