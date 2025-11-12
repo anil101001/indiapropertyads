@@ -41,89 +41,76 @@ class ChatOrchestratorService {
       });
       logger.info('User message added successfully');
 
-      logger.info('About to extract intent from message');
-      
-      // Extract user intent
-      const intentAnalysis = await llmService.extractIntent(request.message);
-      logger.info(`Intent detected: ${intentAnalysis.intent} (confidence: ${intentAnalysis.confidence})`);
-      logger.info(`Extracted data: ${JSON.stringify(intentAnalysis.extractedData)}`);
-
-      // Update user preferences based on extracted data
-      if (intentAnalysis.extractedData && Object.keys(intentAnalysis.extractedData).length > 0) {
-        try {
-          const preferences = this.buildPreferencesFromIntent(intentAnalysis.extractedData);
-          // Only update if we have valid preferences
-          if (Object.keys(preferences).length > 0) {
-            await conversationService.updatePreferences(
-              conversation.conversationId,
-              request.userId,
-              preferences
-            );
-          }
-        } catch (error: any) {
-          // Log but don't fail the chat if preferences update fails
-          logger.warn('Failed to update preferences, continuing anyway:', error.message);
-        }
-      }
-
       // Get conversation history for context
       const history = conversationService.getConversationHistory(conversation, 6);
 
+      // ALWAYS search the database first - no intent detection needed!
+      logger.info('Searching vectorized database with user message...');
+      
+      const searchResults = await propertySearchService.searchProperties(
+        request.message,
+        {},  // No filters - just semantic search
+        5
+      );
+
+      logger.info(`Database search found ${searchResults.properties.length} properties`);
+
       let response: ChatResponse;
 
-      // Handle based on intent
-      let partialResponse: Partial<ChatResponse>;
-      
-      switch (intentAnalysis.intent) {
-        case ConversationIntent.SEARCH:
-        case ConversationIntent.FILTER:
-          partialResponse = await this.handlePropertySearch(
-            request.message,
-            intentAnalysis.extractedData,
-            conversation.userPreferences,
-            history
-          );
-          break;
+      // If properties found, present them
+      if (searchResults.properties.length > 0) {
+        logger.info(`First property: ${searchResults.properties[0].title}`);
+        
+        const recommendationResponse = await llmService.generatePropertyRecommendation(
+          request.message,
+          searchResults.properties,
+          history
+        );
 
-        case ConversationIntent.INQUIRY:
-          partialResponse = await this.handlePropertyInquiry(
-            request.message,
-            history
-          );
-          break;
+        // Map properties to suggestions
+        const propertySuggestions = searchResults.properties.map(p => ({
+          propertyId: p._id.toString(),
+          title: p.title,
+          price: p.pricing.expectedPrice,
+          location: `${p.address.city}, ${p.address.state}`,
+          score: p.score || 0,
+          reason: `Matches your search`
+        }));
 
-        case ConversationIntent.CLARIFICATION:
-          partialResponse = await this.handleClarification(
-            request.message,
-            intentAnalysis.extractedData,
-            history
-          );
-          break;
+        response = {
+          reply: recommendationResponse.content,
+          conversationId: conversation.conversationId,
+          properties: propertySuggestions,
+          suggestedQuestions: FOLLOW_UP_QUESTIONS.SEARCH,
+          metadata: {
+            tokensUsed: recommendationResponse.tokensUsed,
+            searchPerformed: true,
+            propertiesFound: searchResults.properties.length
+          }
+        };
+      } else {
+        // No properties in database
+        const noResultsResponse = await llmService.generateNoResultsResponse(request.message);
 
-        default:
-          partialResponse = await this.handleGeneralQuery(
-            request.message,
-            history
-          );
+        response = {
+          reply: noResultsResponse.content,
+          conversationId: conversation.conversationId,
+          properties: [],
+          suggestedQuestions: FOLLOW_UP_QUESTIONS.GENERAL,
+          metadata: {
+            tokensUsed: noResultsResponse.tokensUsed,
+            searchPerformed: true,
+            propertiesFound: 0
+          }
+        };
       }
-
-      // Build complete response
-      response = {
-        reply: partialResponse.reply || "I'm here to help you find properties.",
-        conversationId: conversation.conversationId,
-        properties: partialResponse.properties || [],
-        suggestedQuestions: partialResponse.suggestedQuestions || [],
-        intent: intentAnalysis.intent,
-        metadata: partialResponse.metadata
-      };
 
       // Save assistant response to conversation
       await conversationService.addMessage(conversation.conversationId, request.userId, {
         role: 'assistant',
         content: response.reply,
         metadata: {
-          propertyIds: response.properties?.map(p => p.propertyId),
-          intent: intentAnalysis.intent
+          propertyIds: response.properties?.map(p => p.propertyId)
         }
       });
 
