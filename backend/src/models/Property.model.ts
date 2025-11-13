@@ -362,6 +362,26 @@ PropertySchema.methods.incrementViews = async function(): Promise<void> {
   await this.save();
 };
 
+// Post-save hook: Auto-vectorize property for AI search
+PropertySchema.post('save', async function(doc) {
+  // Only vectorize if embedding doesn't exist or property content changed
+  if (!doc.embedding || doc.isModified('title') || doc.isModified('description') || doc.isModified('address')) {
+    try {
+      // Import dynamically to avoid circular dependency
+      const { generatePropertyEmbedding } = await import('../services/embedding.service');
+      
+      // Generate embedding asynchronously (don't block save)
+      generatePropertyEmbedding(doc).catch(error => {
+        console.error(`Failed to auto-vectorize property ${doc._id}:`, error.message);
+      });
+      
+    } catch (error: any) {
+      // Log error but don't fail the save operation
+      console.error('Auto-vectorization error:', error.message);
+    }
+  }
+});
+
 const Property = mongoose.model<IProperty>('Property', PropertySchema);
 
 export default Property;
