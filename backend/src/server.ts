@@ -15,6 +15,7 @@ import propertyRoutes from './routes/property.routes';
 import uploadRoutes from './routes/upload.routes';
 import inquiryRoutes from './routes/inquiry.routes';
 import insightsRoutes from './routes/insights.routes';
+import analyticsRoutes from './routes/analytics.routes'; // Conversation Analytics
 import searchRoutes from './routes/search.routes'; // Vector Search
 import { chatRoutes } from './ai-chat'; // AI Chat Module
 
@@ -64,6 +65,7 @@ app.use(`${API_PREFIX}/properties`, propertyRoutes);
 app.use(`${API_PREFIX}/upload`, uploadRoutes);
 app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 app.use(`${API_PREFIX}/insights`, insightsRoutes);
+app.use(`${API_PREFIX}/analytics`, analyticsRoutes); // Conversation Analytics
 app.use(`${API_PREFIX}/search`, searchRoutes); // Vector Search
 app.use(`${API_PREFIX}/ai-chat`, chatRoutes); // AI Chat Module
 

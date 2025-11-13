@@ -6,6 +6,7 @@ import PropertyTypesChart from '../../components/admin/PropertyTypesChart';
 import TopLocationsChart from '../../components/admin/TopLocationsChart';
 import TopPropertiesByInquiriesChart from '../../components/admin/TopPropertiesByInquiriesChart';
 import InsightDetailModal from '../../components/admin/InsightDetailModal';
+import AIInsights from '../../components/admin/AIInsights';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -145,6 +146,14 @@ export default function Insights() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Platform Insights</h1>
           <p className="text-gray-600">Monitor your platform's performance and growth</p>
         </div>
+
+        {/* AI Customer Intelligence - NEW! */}
+        <AIInsights />
+
+        {/* Divider */}
+        <div className="border-t border-gray-200 my-8"></div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Property Analytics</h2>
 
         {/* Date Range Filter */}
         <div className="bg-white rounded-xl shadow-lg p-4 mb-8">
