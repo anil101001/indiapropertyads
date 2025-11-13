@@ -191,6 +191,74 @@ function buildEmbeddingText(propertyData: any): string {
 }
 
 /**
+ * Generate embedding for conversation (customer interactions)
+ * @param conversationData - Conversation document
+ * @returns Embedding result or null
+ */
+export const generateConversationEmbedding = async (
+  conversationData: any
+): Promise<EmbeddingResult | null> => {
+  const startTime = Date.now();
+  
+  if (!isVectorizationEnabled()) {
+    logger.warn('🔴 Conversation vectorization skipped: ENABLE_VECTORIZATION=false');
+    return null;
+  }
+
+  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy-key-for-development') {
+    logger.warn('🔴 Conversation vectorization skipped: OpenAI API key not configured');
+    return null;
+  }
+
+  try {
+    logger.info(`🔄 Generating conversation embedding: ${conversationData._id}`);
+    
+    // Build conversation summary for embedding
+    const textToEmbed = conversationData.summarizeForEmbedding();
+    
+    if (!textToEmbed || textToEmbed.trim().length < 10) {
+      logger.warn(`⚠️ Insufficient conversation text for embedding - skipping`);
+      return null;
+    }
+
+    logger.info(`📝 Conversation text prepared: ${textToEmbed.length} characters`);
+
+    // Generate embedding
+    const response = await getOpenAIClient().embeddings.create({
+      model: 'text-embedding-3-small',
+      input: textToEmbed,
+      dimensions: 1536
+    });
+
+    const duration = Date.now() - startTime;
+    logger.info(`✅ Conversation embedding generated in ${duration}ms`);
+
+    // Save embedding to conversation
+    if (conversationData.save) {
+      conversationData.embedding = response.data[0].embedding;
+      conversationData.embeddingMetadata = {
+        model: 'text-embedding-3-small',
+        generatedAt: new Date(),
+        textUsed: textToEmbed.substring(0, 500)
+      };
+      await conversationData.save();
+      logger.info(`💾 Conversation embedding saved: ${conversationData._id}`);
+    }
+
+    return {
+      embedding: response.data[0].embedding,
+      model: 'text-embedding-3-small',
+      textUsed: textToEmbed.substring(0, 500)
+    };
+
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    logger.error(`❌ Conversation embedding failed after ${duration}ms: ${error.message}`);
+    return null;
+  }
+};
+
+/**
  * Batch generate embeddings for multiple properties
  * Useful for bulk vectorization
  */
