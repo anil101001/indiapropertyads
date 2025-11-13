@@ -30,28 +30,32 @@ export interface EmbeddingResult {
 export const generatePropertyEmbedding = async (
   propertyData: any
 ): Promise<EmbeddingResult | null> => {
+  const startTime = Date.now();
+  
   // Check if feature is enabled
   if (!isVectorizationEnabled()) {
-    logger.info('Vectorization is disabled via feature flag');
+    logger.warn('🔴 Vectorization skipped: ENABLE_VECTORIZATION=false in .env');
     return null;
   }
 
   // Check if API key is configured
   if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy-key-for-development') {
-    logger.warn('OpenAI API key not configured - skipping vectorization');
+    logger.warn('🔴 Vectorization skipped: OpenAI API key not configured or using dummy key');
     return null;
   }
 
   try {
-    logger.info('Generating property embedding...');
+    logger.info(`🔄 Generating embedding for property: ${propertyData._id}`);
     
     // Combine relevant property fields for embedding
     const textToEmbed = buildEmbeddingText(propertyData);
     
     if (!textToEmbed || textToEmbed.trim().length < 10) {
-      logger.warn('Insufficient text for embedding generation');
+      logger.warn(`⚠️ Insufficient text (${textToEmbed?.length || 0} chars) for embedding - skipping`);
       return null;
     }
+
+    logger.info(`📝 Text prepared: ${textToEmbed.length} characters`);
 
     // Generate embedding using OpenAI
     const response = await getOpenAIClient().embeddings.create({
@@ -60,7 +64,22 @@ export const generatePropertyEmbedding = async (
       dimensions: 1536 // Can be reduced to 512 or 256 for storage savings
     });
 
-    logger.info(`Generated embedding for property (${textToEmbed.length} chars)`);
+    const duration = Date.now() - startTime;
+    logger.info(`✅ Embedding generated successfully in ${duration}ms`);
+    logger.info(`   Vector dimensions: 1536`);
+    logger.info(`   Model: text-embedding-3-small`);
+
+    // Save embedding to property
+    if (propertyData.save) {
+      propertyData.embedding = response.data[0].embedding;
+      propertyData.embeddingMetadata = {
+        model: 'text-embedding-3-small',
+        generatedAt: new Date(),
+        textUsed: textToEmbed.substring(0, 500)
+      };
+      await propertyData.save();
+      logger.info(`💾 Embedding saved to database for property: ${propertyData._id}`);
+    }
 
     return {
       embedding: response.data[0].embedding,
@@ -69,7 +88,8 @@ export const generatePropertyEmbedding = async (
     };
 
   } catch (error: any) {
-    logger.error('Error generating embedding:', error.message);
+    const duration = Date.now() - startTime;
+    logger.error(`❌ Embedding generation failed after ${duration}ms: ${error.message}`);
     
     // Don't throw - gracefully degrade to non-vectorized property
     return null;

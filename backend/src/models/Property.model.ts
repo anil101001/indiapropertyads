@@ -365,20 +365,49 @@ PropertySchema.methods.incrementViews = async function(): Promise<void> {
 // Post-save hook: Auto-vectorize property for AI search
 PropertySchema.post('save', async function(doc) {
   // Only vectorize if embedding doesn't exist or property content changed
-  if (!doc.embedding || doc.isModified('title') || doc.isModified('description') || doc.isModified('address')) {
+  const needsVectorization = !doc.embedding || doc.isModified('title') || doc.isModified('description') || doc.isModified('address');
+  
+  if (needsVectorization) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🤖 AUTO-VECTORIZATION TRIGGERED');
+    console.log(`   Property ID: ${doc._id}`);
+    console.log(`   Title: ${doc.title}`);
+    console.log(`   Reason: ${!doc.embedding ? 'New property (no embedding)' : 'Content updated'}`);
+    console.log('   Status: Starting vectorization...');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     try {
       // Import dynamically to avoid circular dependency
       const { generatePropertyEmbedding } = await import('../services/embedding.service');
       
       // Generate embedding asynchronously (don't block save)
-      generatePropertyEmbedding(doc).catch(error => {
-        console.error(`Failed to auto-vectorize property ${doc._id}:`, error.message);
+      generatePropertyEmbedding(doc).then(() => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('✅ AUTO-VECTORIZATION COMPLETE');
+        console.log(`   Property ID: ${doc._id}`);
+        console.log(`   Title: ${doc.title}`);
+        console.log('   Status: Ready for AI search!');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      }).catch(error => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('❌ AUTO-VECTORIZATION FAILED');
+        console.log(`   Property ID: ${doc._id}`);
+        console.log(`   Title: ${doc.title}`);
+        console.log(`   Error: ${error.message}`);
+        console.log('   Impact: Property saved but NOT searchable by AI');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       });
       
     } catch (error: any) {
       // Log error but don't fail the save operation
-      console.error('Auto-vectorization error:', error.message);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('❌ AUTO-VECTORIZATION ERROR');
+      console.log(`   Property ID: ${doc._id}`);
+      console.log(`   Error: ${error.message}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
+  } else {
+    console.log(`⏭️  Skipping vectorization for property ${doc._id} - no changes to searchable content`);
   }
 });
 
