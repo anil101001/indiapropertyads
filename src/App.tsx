@@ -32,6 +32,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="properties" element={<PropertyListing />} />
             <Route path="property/:id" element={<PropertyDetail />} />
+            <Route path="properties/:id" element={<PropertyDetail />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             
