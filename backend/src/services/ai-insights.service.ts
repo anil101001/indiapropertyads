@@ -1,4 +1,4 @@
-import Conversation from '../models/Conversation.model';
+import Conversation from '../ai-chat/models/Conversation.model';
 import OpenAI from 'openai';
 import logger from '../utils/logger';
 
@@ -74,9 +74,9 @@ export async function generateAIInsights(period: string): Promise<AIInsightsResu
 
     // Fetch conversations
     const conversations = await Conversation.find({
-      startedAt: { $gte: startDate, $lte: endDate }
+      createdAt: { $gte: startDate, $lte: endDate }
     })
-      .select('messages userIntents preferredLocations budgetRange leadQuality conversionStatus totalMessages propertiesViewed')
+      .select('messages userPreferences metadata status')
       .limit(100)
       .lean();
 
@@ -113,25 +113,40 @@ export async function generateAIInsights(period: string): Promise<AIInsightsResu
         .slice(0, 3) // First 3 messages
         .join(' | ') || 'No messages';
 
+      const prefs = conv.userPreferences || {};
+      const location = prefs.location || {};
+      const budget = prefs.budget || {};
+      
+      // Extract property IDs from message metadata
+      const propertyIds = conv.messages
+        ?.flatMap((m: any) => m.metadata?.propertyIds || [])
+        .filter(Boolean) || [];
+
       return {
-        messages: conv.totalMessages || 0,
+        messages: conv.messages?.length || 0,
         userQueries: userMessages.substring(0, 200), // Limit length
-        intents: conv.userIntents || [],
-        locations: conv.preferredLocations || [],
-        budget: conv.budgetRange ? `₹${(conv.budgetRange.min || 0) / 100000}L - ₹${(conv.budgetRange.max || 0) / 100000}L` : 'Not specified',
-        leadQuality: conv.leadQuality || 'unknown',
-        converted: conv.conversionStatus === 'inquired' || conv.conversionStatus === 'scheduled_visit',
-        propertiesViewed: (conv.propertiesViewed || []).length
+        location: location.city || location.locality || 'Not specified',
+        preferredAreas: location.preferredAreas || [],
+        budget: budget.max ? `₹${(budget.min || 0) / 100000}L - ₹${budget.max / 100000}L` : 'Not specified',
+        propertyType: prefs.propertyType || 'Not specified',
+        bedrooms: prefs.bedrooms || 'Not specified',
+        listingType: prefs.listingType || 'Not specified',
+        status: conv.status || 'unknown',
+        propertiesViewed: propertyIds.length
       };
     });
 
     // Calculate basic metrics
-    const hotLeads = conversations.filter((c: any) => c.leadQuality === 'hot').length;
-    const inquired = conversations.filter((c: any) => 
-      c.conversionStatus === 'inquired' || c.conversionStatus === 'scheduled_visit'
-    ).length;
+    // Infer hot leads: conversations with budget set, location set, and multiple messages
+    const hotLeads = conversations.filter((c: any) => {
+      const prefs = c.userPreferences || {};
+      return prefs.budget?.max && prefs.location?.city && c.messages?.length >= 5;
+    }).length;
+    
+    // Closed conversations indicate potential conversion
+    const closedConversations = conversations.filter((c: any) => c.status === 'closed').length;
     const conversionRate = conversations.length > 0 
-      ? Math.round((inquired / conversations.length) * 100) 
+      ? Math.round((closedConversations / conversations.length) * 100) 
       : 0;
 
     // Create GPT prompt
@@ -145,7 +160,7 @@ ${JSON.stringify(conversationData.slice(0, 50), null, 2)}
 METRICS:
 - Total Conversations: ${conversations.length}
 - Hot Leads: ${hotLeads}
-- Inquiries: ${inquired}
+- Closed Conversations: ${closedConversations}
 - Conversion Rate: ${conversionRate}%
 
 Provide actionable business intelligence in this EXACT JSON format:

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import Conversation from '../models/Conversation.model';
+import Conversation from '../ai-chat/models/Conversation.model';
 import { generateAIInsights } from '../services/ai-insights.service';
 import logger from '../utils/logger';
 
@@ -17,53 +17,45 @@ export const getConversationOverview = async (req: AuthRequest, res: Response): 
     if (startDate) dateFilter.$gte = new Date(startDate as string);
     if (endDate) dateFilter.$lte = new Date(endDate as string);
     
-    const query = Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {};
+    const query = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
     const [
       totalConversations,
       activeConversations,
       avgMessages,
-      leadDistribution,
-      conversionStats
+      statusDistribution
     ] = await Promise.all([
       Conversation.countDocuments(query),
-      Conversation.countDocuments({ ...query, isActive: true }),
+      Conversation.countDocuments({ ...query, status: 'active' }),
       Conversation.aggregate([
         { $match: query },
-        { $group: { _id: null, avg: { $avg: '$totalMessages' } } }
+        { $project: { messageCount: { $size: { $ifNull: ['$messages', []] } } } },
+        { $group: { _id: null, avg: { $avg: '$messageCount' } } }
       ]),
       Conversation.aggregate([
         { $match: query },
-        { $group: { _id: '$leadQuality', count: { $sum: 1 } } }
-      ]),
-      Conversation.aggregate([
-        { $match: query },
-        { $group: { _id: '$conversionStatus', count: { $sum: 1 } } }
+        { $group: { _id: '$status', count: { $sum: 1 } } }
       ])
     ]);
 
-    const leadDist: any = {};
-    leadDistribution.forEach((l: any) => leadDist[l._id || 'unknown'] = l.count);
+    const statusDist: any = {};
+    statusDistribution.forEach((s: any) => statusDist[s._id] = s.count);
     
-    const conversionDist: any = {};
-    conversionStats.forEach((c: any) => conversionDist[c._id] = c.count);
-    
-    const inquired = conversionDist.inquired || 0;
-    const conversionRate = totalConversations > 0 ? (inquired / totalConversations) * 100 : 0;
+    const closed = statusDist.closed || 0;
+    const conversionRate = totalConversations > 0 ? (closed / totalConversations) * 100 : 0;
 
     res.json({
       success: true,
       data: {
         totalConversations,
         activeConversations,
-        avgMessagesPerConversation: avgMessages[0]?.avg || 0,
-        leadDistribution: {
-          hot: leadDist.hot || 0,
-          warm: leadDist.warm || 0,
-          cold: leadDist.cold || 0
+        avgMessagesPerConversation: Math.round((avgMessages[0]?.avg || 0) * 10) / 10,
+        statusDistribution: {
+          active: statusDist.active || 0,
+          closed: statusDist.closed || 0,
+          archived: statusDist.archived || 0
         },
-        conversionRate: Math.round(conversionRate * 10) / 10,
-        conversionStatus: conversionDist
+        conversionRate: Math.round(conversionRate * 10) / 10
       }
     });
   } catch (error: any) {
@@ -85,13 +77,16 @@ export const getIntentsDistribution = async (req: AuthRequest, res: Response): P
     if (startDate) dateFilter.$gte = new Date(startDate as string);
     if (endDate) dateFilter.$lte = new Date(endDate as string);
     
-    const matchStage = Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {};
+    const matchStage = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
+    // Extract intents from message metadata
     const intents = await Conversation.aggregate([
       { $match: matchStage },
-      { $unwind: '$userIntents' },
-      { $group: { _id: '$userIntents', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
+      { $unwind: '$messages' },
+      { $match: { 'messages.metadata.intent': { $exists: true } } },
+      { $group: { _id: '$messages.metadata.intent', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 20 }
     ]);
 
     res.json({
@@ -117,16 +112,16 @@ export const getTopLocations = async (req: AuthRequest, res: Response): Promise<
     if (startDate) dateFilter.$gte = new Date(startDate as string);
     if (endDate) dateFilter.$lte = new Date(endDate as string);
     
-    const matchStage = Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {};
+    const matchStage = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
+    // Extract locations from userPreferences
     const locations = await Conversation.aggregate([
-      { $match: matchStage },
-      { $unwind: '$preferredLocations' },
+      { $match: { ...matchStage, 'userPreferences.location.city': { $exists: true } } },
       {
         $group: {
-          _id: '$preferredLocations',
+          _id: '$userPreferences.location.city',
           count: { $sum: 1 },
-          avgBudgetMax: { $avg: '$budgetRange.max' }
+          avgBudgetMax: { $avg: '$userPreferences.budget.max' }
         }
       },
       { $sort: { count: -1 } },
@@ -138,7 +133,7 @@ export const getTopLocations = async (req: AuthRequest, res: Response): Promise<
       data: locations.map((l: any) => ({
         location: l._id,
         queries: l.count,
-        avgBudget: l.avgBudgetMax || 0
+        avgBudget: l.avgBudgetMax ? Math.round(l.avgBudgetMax / 100000) + 'L' : 'N/A'
       }))
     });
   } catch (error: any) {
@@ -160,13 +155,13 @@ export const getBudgetTrends = async (req: AuthRequest, res: Response): Promise<
     if (startDate) dateFilter.$gte = new Date(startDate as string);
     if (endDate) dateFilter.$lte = new Date(endDate as string);
     
-    const matchStage = Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {};
+    const matchStage = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
     const budgets = await Conversation.aggregate([
-      { $match: { ...matchStage, 'budgetRange.max': { $exists: true } } },
+      { $match: { ...matchStage, 'userPreferences.budget.max': { $exists: true } } },
       {
         $bucket: {
-          groupBy: '$budgetRange.max',
+          groupBy: '$userPreferences.budget.max',
           boundaries: [0, 5000000, 10000000, 20000000, 50000000, 100000000, Number.MAX_VALUE],
           default: 'Other',
           output: { count: { $sum: 1 } }
@@ -200,16 +195,16 @@ export const getConversationsTimeline = async (req: AuthRequest, res: Response):
     if (startDate) dateFilter.$gte = new Date(startDate as string);
     if (endDate) dateFilter.$lte = new Date(endDate as string);
     
-    const matchStage = Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {};
+    const matchStage = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
     const timeline = await Conversation.aggregate([
       { $match: matchStage },
       {
         $group: {
           _id: {
-            year: { $year: '$startedAt' },
-            month: { $month: '$startedAt' },
-            day: { $dayOfMonth: '$startedAt' }
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+            day: { $dayOfMonth: '$createdAt' }
           },
           count: { $sum: 1 }
         }

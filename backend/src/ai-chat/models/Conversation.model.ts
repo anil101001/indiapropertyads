@@ -133,6 +133,7 @@ ConversationSchema.methods.close = function() {
   return this.save();
 };
 
-const Conversation = mongoose.model<IConversation>('Conversation', ConversationSchema);
+// Use singleton pattern to prevent model overwrite error
+const Conversation = mongoose.models.Conversation || mongoose.model<IConversation>('Conversation', ConversationSchema);
 
 export default Conversation;
