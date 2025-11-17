@@ -215,86 +215,151 @@ export default function BuyerDashboard() {
         {/* Inquiries List */}
         {!loading && !error && inquiries.length > 0 && (
           <div className="space-y-4">
-            {inquiries.map((inquiry) => (
-              <div key={inquiry._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden">
-                <div className="md:flex">
-                  {/* Property Image */}
-                  <div className="md:w-64 h-48 md:h-auto">
-                    <img
-                      src={inquiry.property.images[0]?.url || '/placeholder-property.jpg'}
-                      alt={inquiry.property.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+            {inquiries.map((inquiry) => {
+              const property = inquiry.property;
 
-                  {/* Content */}
-                  <div className="flex-1 p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <Link
-                          to={`/property/${inquiry.property._id}`}
-                          className="text-xl font-semibold text-gray-900 hover:text-primary-600 transition"
-                        >
-                          {inquiry.property.title}
-                        </Link>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>{inquiry.property.address.city}</span>
+              // Handle cases where the related property is missing (e.g. deleted or not populated)
+              if (!property) {
+                return (
+                  <div
+                    key={inquiry._id}
+                    className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden"
+                  >
+                    <div className="md:flex">
+                      <div className="md:w-64 h-48 md:h-auto bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">Property no longer available</span>
+                      </div>
+                      <div className="flex-1 p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <p className="text-lg font-semibold text-gray-900">Property unavailable</p>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <IndianRupee className="h-4 w-4" />
-                            <span>{formatPrice(inquiry.property.pricing.expectedPrice)}</span>
+                          <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(inquiry.status)}`}>
+                            {getStatusIcon(inquiry.status)}
+                            {inquiry.status.charAt(0).toUpperCase() + inquiry.status.slice(1).replace('-', ' ')}
+                          </span>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                          <p className="text-sm text-gray-700 mb-2">
+                            <span className="font-semibold">Your Message:</span> {inquiry.message}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            {getContactMethodIcon(inquiry.contactMethod)}
+                            <span>Preferred: {inquiry.contactMethod.charAt(0).toUpperCase() + inquiry.contactMethod.slice(1)}</span>
+                          </div>
+                        </div>
+
+                        {inquiry.response && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-semibold text-green-700">Owner's Response:</span> {inquiry.response}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between text-sm text-gray-600">
+                          <div className="flex items-center gap-4">
+                            <span>Sent {new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                            {inquiry.respondedAt && (
+                              <span>
+                                 Responded {new Date(inquiry.respondedAt).toLocaleDateString()}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                );
+              }
 
-                      {/* Status Badge */}
-                      <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(inquiry.status)}`}>
-                        {getStatusIcon(inquiry.status)}
-                        {inquiry.status.charAt(0).toUpperCase() + inquiry.status.slice(1).replace('-', ' ')}
-                      </span>
+              return (
+                <div
+                  key={inquiry._id}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden"
+                >
+                  <div className="md:flex">
+                    {/* Property Image */}
+                    <div className="md:w-64 h-48 md:h-auto">
+                      <img
+                        src={property.images?.[0]?.url || '/placeholder-property.jpg'}
+                        alt={property.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
-                    {/* Inquiry Message */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                      <p className="text-sm text-gray-700 mb-2">
-                        <span className="font-semibold">Your Message:</span> {inquiry.message}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        {getContactMethodIcon(inquiry.contactMethod)}
-                        <span>Preferred: {inquiry.contactMethod.charAt(0).toUpperCase() + inquiry.contactMethod.slice(1)}</span>
+                    {/* Content */}
+                    <div className="flex-1 p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <Link
+                            to={`/property/${property._id}`}
+                            className="text-xl font-semibold text-gray-900 hover:text-primary-600 transition"
+                          >
+                            {property.title}
+                          </Link>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>{property.address?.city}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <IndianRupee className="h-4 w-4" />
+                              <span>{property.pricing?.expectedPrice ? formatPrice(property.pricing.expectedPrice) : 'Price on request'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(inquiry.status)}`}>
+                          {getStatusIcon(inquiry.status)}
+                          {inquiry.status.charAt(0).toUpperCase() + inquiry.status.slice(1).replace('-', ' ')}
+                        </span>
                       </div>
-                    </div>
 
-                    {/* Owner Response */}
-                    {inquiry.response && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
-                        <p className="text-sm text-gray-700">
-                          <span className="font-semibold text-green-700">Owner's Response:</span> {inquiry.response}
+                      {/* Inquiry Message */}
+                      <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                        <p className="text-sm text-gray-700 mb-2">
+                          <span className="font-semibold">Your Message:</span> {inquiry.message}
                         </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          {getContactMethodIcon(inquiry.contactMethod)}
+                          <span>Preferred: {inquiry.contactMethod.charAt(0).toUpperCase() + inquiry.contactMethod.slice(1)}</span>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center gap-4">
-                        <span>Sent {new Date(inquiry.createdAt).toLocaleDateString()}</span>
-                        {inquiry.respondedAt && (
-                          <span>• Responded {new Date(inquiry.respondedAt).toLocaleDateString()}</span>
-                        )}
+                      {/* Owner Response */}
+                      {inquiry.response && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-semibold text-green-700">Owner's Response:</span> {inquiry.response}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <div className="flex items-center gap-4">
+                          <span>Sent {new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                          {inquiry.respondedAt && (
+                            <span>
+                               Responded {new Date(inquiry.respondedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        <Link
+                          to={`/property/${property._id}`}
+                          className="text-primary-600 hover:text-primary-700 font-medium"
+                        >
+                          View Property 
+                        </Link>
                       </div>
-                      <Link
-                        to={`/property/${inquiry.property._id}`}
-                        className="text-primary-600 hover:text-primary-700 font-medium"
-                      >
-                        View Property →
-                      </Link>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
