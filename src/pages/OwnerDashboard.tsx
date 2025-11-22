@@ -61,36 +61,59 @@ export default function OwnerDashboard() {
     setLoading(true);
     setError('');
     try {
-      // Fetch inquiries
-      const inquiriesResponse = await inquiryService.getReceivedInquiries({
-        status: filter !== 'all' ? filter : undefined,
-        limit: 50
-      });
+      // Fetch both inquiries and properties, handling errors independently
+      const [inquiriesResponse, propertiesResponse] = await Promise.allSettled([
+        inquiryService.getReceivedInquiries({
+          status: filter !== 'all' ? filter : undefined,
+          limit: 50
+        }),
+        propertyService.getMyProperties({
+          limit: 50
+        })
+      ]);
 
-      // Fetch properties
-      const propertiesResponse = await propertyService.getProperties({
-        limit: 50
-      });
+      // Handle inquiries response
+      if (inquiriesResponse.status === 'fulfilled' && inquiriesResponse.value?.success) {
+        const inquiriesData = inquiriesResponse.value.data.inquiries || [];
+        const inquiriesPagination = inquiriesResponse.value.data.pagination || { total: 0 };
+        setInquiries(inquiriesData);
+        setStats(prev => ({
+          ...prev,
+          totalInquiries: inquiriesPagination.total,
+          newInquiries: inquiriesData.filter((i: Inquiry) => i.status === 'new').length,
+        }));
+      } else {
+        console.error('Failed to fetch inquiries:', inquiriesResponse);
+      }
 
-      if (inquiriesResponse.success && propertiesResponse.success) {
-        setInquiries(inquiriesResponse.data.inquiries);
-        setProperties(propertiesResponse.data.properties);
-
-        // Calculate stats
-        const totalViews = propertiesResponse.data.properties.reduce(
-          (sum: number, prop: Property) => sum + prop.stats.views,
+      // Handle properties response
+      if (propertiesResponse.status === 'fulfilled' && propertiesResponse.value?.success) {
+        const propertiesData = propertiesResponse.value.data.properties || [];
+        const propertiesPagination = propertiesResponse.value.data.pagination || { total: 0 };
+        setProperties(propertiesData);
+        
+        // Calculate stats safely
+        const totalViews = propertiesData.reduce(
+          (sum: number, prop: Property) => sum + (prop.stats?.views || 0),
           0
         );
 
-        setStats({
-          totalInquiries: inquiriesResponse.data.pagination.total,
-          newInquiries: inquiriesResponse.data.inquiries.filter((i: Inquiry) => i.status === 'new').length,
-          totalProperties: propertiesResponse.data.pagination.total,
+        setStats(prev => ({
+          ...prev,
+          totalProperties: propertiesPagination.total,
           totalViews
-        });
+        }));
+      } else {
+        console.error('Failed to fetch properties:', propertiesResponse);
+      }
+
+      // Set error only if both failed
+      if (inquiriesResponse.status === 'rejected' && propertiesResponse.status === 'rejected') {
+        setError('Failed to load dashboard data. Please try again.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data');
+      console.error('Dashboard fetch error:', err);
+      setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }

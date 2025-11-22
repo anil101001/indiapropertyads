@@ -227,10 +227,18 @@ export default function PropertyListing() {
                     className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <option value="">All Types</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="villa">Villa</option>
-                    <option value="independent-house">Independent House</option>
-                    <option value="plot">Plot</option>
+                    <optgroup label="Residential">
+                      <option value="apartment">Apartment</option>
+                      <option value="villa">Villa</option>
+                      <option value="independent-house">Independent House</option>
+                      <option value="plot">Plot/Land</option>
+                    </optgroup>
+                    <optgroup label="Commercial">
+                      <option value="shop">Shop</option>
+                      <option value="office">Office Space</option>
+                      <option value="warehouse">Warehouse</option>
+                      <option value="showroom">Showroom</option>
+                    </optgroup>
                   </select>
                 </div>
 

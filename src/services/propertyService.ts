@@ -4,7 +4,7 @@ export interface Property {
   _id: string;
   title: string;
   description: string;
-  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot';
+  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
   listingType: 'sale' | 'rent';
   address: {
     fullAddress: string;

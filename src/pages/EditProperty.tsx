@@ -29,7 +29,7 @@ export default function EditProperty() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    propertyType: 'apartment' as 'apartment' | 'villa' | 'independent-house' | 'plot',
+    propertyType: 'apartment' as 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom',
     listingType: 'sale' as 'sale' | 'rent',
     fullAddress: '',
     city: '',
@@ -296,10 +296,18 @@ export default function EditProperty() {
                     onChange={(e) => setFormData({ ...formData, propertyType: e.target.value as any })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    <option value="apartment">Apartment</option>
-                    <option value="villa">Villa</option>
-                    <option value="independent-house">Independent House</option>
-                    <option value="plot">Plot</option>
+                    <optgroup label="Residential">
+                      <option value="apartment">Apartment</option>
+                      <option value="villa">Villa</option>
+                      <option value="independent-house">Independent House</option>
+                      <option value="plot">Plot/Land</option>
+                    </optgroup>
+                    <optgroup label="Commercial">
+                      <option value="shop">Shop</option>
+                      <option value="office">Office Space</option>
+                      <option value="warehouse">Warehouse</option>
+                      <option value="showroom">Showroom</option>
+                    </optgroup>
                   </select>
                 </div>
 

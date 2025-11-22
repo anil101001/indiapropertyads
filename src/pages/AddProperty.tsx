@@ -64,6 +64,11 @@ export default function AddProperty() {
     tags: ['Premium', 'Well-Connected', 'Family-Friendly'],
   });
 
+  // Helper to check if property is commercial
+  const isCommercial = () => {
+    return ['shop', 'office', 'warehouse', 'showroom'].includes(formData.propertyType);
+  };
+
   // Amenities based on property type
   const getAvailableAmenities = () => {
     const commonAmenities = [
@@ -96,6 +101,24 @@ export default function AddProperty() {
       'Street Lights',
       'Park Nearby',
     ];
+
+    const commercialAmenities = [
+      'Lift',
+      'Parking',
+      'Central AC',
+      'Conference Room',
+      'Cafeteria',
+      'Reception Area',
+      'High-Speed Internet',
+      'Loading Bay',
+      'Washrooms',
+      'Public Transport Access',
+    ];
+
+    // For commercial properties
+    if (isCommercial()) {
+      return [...commercialAmenities, ...commonAmenities];
+    }
 
     // For gated community plots, show building amenities (community facilities) + common
     if (formData.propertyType === 'plot' && formData.plotType === 'gated-community') {
@@ -297,7 +320,7 @@ export default function AddProperty() {
       const propertyData = {
         title: formData.title,
         description: formData.description,
-        propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot',
+        propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom',
         listingType: formData.listingType as 'sale' | 'rent',
         address: {
           fullAddress: formData.fullAddress,
@@ -308,9 +331,10 @@ export default function AddProperty() {
         },
         specs: {
           carpetArea: Number(formData.carpetArea),
-          bedrooms: Number(formData.bedrooms),
-          bathrooms: Number(formData.bathrooms),
-          balconies: Number(formData.balconies),
+          // For commercial properties, set bedrooms/bathrooms/balconies to 0
+          bedrooms: isCommercial() ? 0 : Number(formData.bedrooms),
+          bathrooms: isCommercial() ? 0 : Number(formData.bathrooms),
+          balconies: isCommercial() ? 0 : Number(formData.balconies),
           parking: {
             covered: Number(formData.coveredParking),
             open: Number(formData.openParking),
@@ -443,10 +467,18 @@ export default function AddProperty() {
                   onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                 >
-                  <option value="apartment">Apartment</option>
-                  <option value="villa">Villa</option>
-                  <option value="independent-house">Independent House</option>
-                  <option value="plot">Plot/Land</option>
+                  <optgroup label="Residential">
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="independent-house">Independent House</option>
+                    <option value="plot">Plot/Land</option>
+                  </optgroup>
+                  <optgroup label="Commercial">
+                    <option value="shop">Shop</option>
+                    <option value="office">Office Space</option>
+                    <option value="warehouse">Warehouse</option>
+                    <option value="showroom">Showroom</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -712,30 +744,64 @@ export default function AddProperty() {
                 </div>
               </div>
 
-              {/* Bedrooms, Bathrooms, Parking */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
-                  <select
-                    value={formData.bedrooms}
-                    onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  >
-                    {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                      <option key={num} value={num}>
-                        {num} BHK
-                      </option>
-                    ))}
-                  </select>
+              {/* Bedrooms, Bathrooms, Parking - Only for residential properties */}
+              {!isCommercial() && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                    <select
+                      value={formData.bedrooms}
+                      onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    >
+                      {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                        <option key={num} value={num}>
+                          {num} BHK
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                    <select
+                      value={formData.bathrooms}
+                      onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                        <option key={num} value={num}>
+                          {num}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Balconies</label>
+                    <select
+                      value={formData.balconies}
+                      onChange={(e) => setFormData({ ...formData, balconies: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    >
+                      {[0, 1, 2, 3, 4].map((num) => (
+                        <option key={num} value={num}>
+                          {num}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+              )}
+
+              {/* Parking for all property types */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Covered Parking</label>
                   <select
-                    value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                    value={formData.coveredParking}
+                    onChange={(e) => setFormData({ ...formData, coveredParking: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                    {[0, 1, 2, 3, 4, 5].map((num) => (
                       <option key={num} value={num}>
                         {num}
                       </option>
@@ -743,13 +809,13 @@ export default function AddProperty() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Parking</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Open Parking</label>
                   <select
-                    value={formData.coveredParking}
-                    onChange={(e) => setFormData({ ...formData, coveredParking: e.target.value })}
+                    value={formData.openParking}
+                    onChange={(e) => setFormData({ ...formData, openParking: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    {[0, 1, 2, 3].map((num) => (
+                    {[0, 1, 2, 3, 4, 5].map((num) => (
                       <option key={num} value={num}>
                         {num}
                       </option>

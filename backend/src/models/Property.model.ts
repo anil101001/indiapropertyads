@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IProperty extends Document {
   title: string;
   description: string;
-  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot';
+  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
   listingType: 'sale' | 'rent';
   plotType?: 'gated-community' | 'independent'; // Only for plots
   
@@ -115,7 +115,7 @@ const PropertySchema = new Schema<IProperty>(
     },
     propertyType: {
       type: String,
-      enum: ['apartment', 'villa', 'independent-house', 'plot'],
+      enum: ['apartment', 'villa', 'independent-house', 'plot', 'shop', 'office', 'warehouse', 'showroom'],
       required: [true, 'Property type is required']
     },
     listingType: {
