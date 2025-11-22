@@ -60,6 +60,7 @@ export default function OwnerDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     setError('');
+    console.log('🔄 Fetching owner dashboard data...');
     try {
       // Fetch both inquiries and properties, handling errors independently
       const [inquiriesResponse, propertiesResponse] = await Promise.allSettled([
@@ -71,6 +72,8 @@ export default function OwnerDashboard() {
           limit: 50
         })
       ]);
+      console.log('📊 Inquiries response:', inquiriesResponse);
+      console.log('🏠 Properties response:', propertiesResponse);
 
       // Handle inquiries response
       if (inquiriesResponse.status === 'fulfilled' && inquiriesResponse.value?.success) {
@@ -139,6 +142,15 @@ export default function OwnerDashboard() {
       setUpdating(false);
     }
   };
+
+  // If still loading initially, show loading screen
+  if (loading && inquiries.length === 0 && properties.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
@@ -256,7 +268,7 @@ export default function OwnerDashboard() {
             )}
 
             {/* Empty State */}
-            {!loading && !error && inquiries.length === 0 && (
+            {!loading && !error && inquiries.filter(inquiry => inquiry.property !== null).length === 0 && (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                 <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No Inquiries Yet</h3>
@@ -267,7 +279,7 @@ export default function OwnerDashboard() {
             {/* Inquiries List */}
             {!loading && !error && inquiries.length > 0 && (
               <div className="space-y-4">
-                {inquiries.map((inquiry) => (
+                {inquiries.filter(inquiry => inquiry.property !== null).map((inquiry) => (
                   <div key={inquiry._id} className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
