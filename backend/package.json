@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "find-duplicates": "ts-node scripts/find-duplicates.ts",
+    "clean-duplicates": "ts-node scripts/clean-duplicates.ts"
   },
   "keywords": [
     "real-estate",
