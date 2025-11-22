@@ -113,11 +113,21 @@ export default function EditProperty() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
+    // Validate total number of images
     if (files.length + existingImages.length + newImages.length > 10) {
       setError('Maximum 10 images allowed');
       return;
     }
 
+    // Validate file sizes
+    const oversized = files.find(f => f.size > 10 * 1024 * 1024);
+    if (oversized) {
+      setError('Each image must be less than 10MB');
+      return;
+    }
+
+    setError(''); // Clear any previous errors
     setNewImages([...newImages, ...files]);
 
     // Create preview URLs

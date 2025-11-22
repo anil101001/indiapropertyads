@@ -148,9 +148,9 @@ export default function AddProperty() {
       }
 
       // Check file sizes
-      const oversized = fileArray.find(f => f.size > 5 * 1024 * 1024);
+      const oversized = fileArray.find(f => f.size > 10 * 1024 * 1024);
       if (oversized) {
-        setError('Each image must be less than 5MB');
+        setError('Each image must be less than 10MB');
         return;
       }
 
