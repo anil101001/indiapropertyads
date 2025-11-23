@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndiaPropertyAds - AI-Powered Property Platform | Free Beta Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .beta-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+        
+        /* Comparison Section */
+        .comparison {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .comparison h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .check {
+            color: #10b981;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .cross {
+            color: #ef4444;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .partial {
+            color: #f59e0b;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        /* AI Section */
+        .ai-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .ai-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .ai-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .ai-feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .ai-feature h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        /* CTA Section */
+        .cta {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .cta p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 50px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: transform 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Footer */
+        .footer {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .footer p {
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🏠 IndiaPropertyAds</div>
+            <p class="tagline">India's First AI-Powered Property Platform</p>
+            <span class="beta-badge">🎉 FREE BETA TESTING NOW OPEN!</span>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Why Choose IndiaPropertyAds Over 99acres, MagicBricks & Housing.com?</h1>
+            <p>Experience the future of property transactions with AI-powered insights, zero commissions during beta, and features designed for modern India.</p>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison">
+            <h2>📊 Feature Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>IndiaPropertyAds</th>
+                        <th>99acres / MagicBricks / Housing.com</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>AI-Powered Price Prediction</strong></td>
+                        <td><span class="check">✓</span> Real-time AI valuation</td>
+                        <td><span class="cross">✗</span> Manual pricing only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smart Property Matching</strong></td>
+                        <td><span class="check">✓</span> AI matches buyers to properties</td>
+                        <td><span class="partial">~</span> Basic filters</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Listing Fees (Beta)</strong></td>
+                        <td><span class="check">✓</span> 100% FREE</td>
+                        <td><span class="cross">✗</span> ₹5,000 - ₹50,000/listing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Commercial Properties Support</strong></td>
+                        <td><span class="check">✓</span> Shops, Offices, Warehouses, Showrooms</td>
+                        <td><span class="partial">~</span> Limited options</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Social Media Integration</strong></td>
+                        <td><span class="check">✓</span> YouTube, Facebook, Instagram links</td>
+                        <td><span class="cross">✗</span> Not available</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Duplicate Prevention</strong></td>
+                        <td><span class="check">✓</span> Auto-detect & prevent duplicates</td>
+                        <td><span class="cross">✗</span> Same property listed multiple times</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Direct Owner-Buyer Connection</strong></td>
+                        <td><span class="check">✓</span> No intermediaries needed</td>
+                        <td><span class="cross">✗</span> Often requires paid subscriptions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Modern UI/UX</strong></td>
+                        <td><span class="check">✓</span> Clean, fast, mobile-first</td>
+                        <td><span class="partial">~</span> Cluttered with ads</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Image Upload Limit</strong></td>
+                        <td><span class="check">✓</span> Up to 10 images @ 10MB each</td>
+                        <td><span class="partial">~</span> Limited to 5-8 images</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Property Analytics</strong></td>
+                        <td><span class="check">✓</span> Views, inquiries, market trends</td>
+                        <td><span class="partial">~</span> Premium feature only</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Benefits for Different Users -->
+        <div class="features">
+            <!-- Property Owners -->
+            <div class="feature-card">
+                <div class="feature-icon">👨‍💼</div>
+                <h3>For Property Owners</h3>
+                <ul>
+                    <li>List properties for FREE during beta</li>
+                    <li>AI suggests optimal pricing</li>
+                    <li>Direct contact with serious buyers</li>
+                    <li>Track views and inquiries in real-time</li>
+                    <li>Add social media links (YouTube tours, etc.)</li>
+                    <li>No hidden charges or commissions</li>
+                    <li>Professional dashboard to manage listings</li>
+                    <li>Instant approval for verified users</li>
+                </ul>
+            </div>
+
+            <!-- Agents -->
+            <div class="feature-card">
+                <div class="feature-icon">🏢</div>
+                <h3>For Agents & Builders</h3>
+                <ul>
+                    <li>Unlimited listings during beta</li>
+                    <li>Bulk upload capabilities</li>
+                    <li>Dedicated agent dashboard</li>
+                    <li>Lead management system</li>
+                    <li>Direct publishing (no approval needed)</li>
+                    <li>Analytics and insights</li>
+                    <li>Build your digital presence</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+
+            <!-- Buyers -->
+            <div class="feature-card">
+                <div class="feature-icon">🏡</div>
+                <h3>For Property Buyers</h3>
+                <ul>
+                    <li>100% FREE - No subscription needed</li>
+                    <li>AI-powered property recommendations</li>
+                    <li>Advanced filters (price, location, type)</li>
+                    <li>Direct owner contact details</li>
+                    <li>View social media content (virtual tours)</li>
+                    <li>Save favorite properties</li>
+                    <li>Real-time property alerts</li>
+                    <li>Transparent pricing - no hidden costs</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- AI Features -->
+        <div class="ai-section">
+            <h2>🤖 How AI Makes Property Transactions Easy</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
+                IndiaPropertyAds leverages cutting-edge artificial intelligence to revolutionize how you buy, sell, or rent properties.
+            </p>
+            
+            <div class="ai-features">
+                <div class="ai-feature">
+                    <h4>💰 Smart Price Prediction</h4>
+                    <p>AI analyzes thousands of properties to suggest the perfect price - not too high, not too low.</p>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>🎯 Intelligent Matching</h4>
+                    <p>AI learns your preferences and shows properties that truly match what you're looking for.</p>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>📊 Market Insights</h4>
+                    <p>Get AI-powered insights on market trends, demand, and best time to buy or sell.</p>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>🔍 Duplicate Detection</h4>
+                    <p>AI automatically prevents duplicate listings, ensuring clean and reliable data.</p>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>📸 Image Analysis</h4>
+                    <p>AI analyzes property images for quality, composition, and detects room types automatically.</p>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>💬 Natural Language Search</h4>
+                    <p>Search properties using natural language - "3BHK near IT park under 1 crore"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- What Makes Us Different -->
+        <div class="comparison">
+            <h2>🌟 What Makes IndiaPropertyAds Unique?</h2>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">🚀 Built for Modern India</h3>
+                    <p>Unlike legacy platforms, we're built from scratch with modern technology, focusing on speed, simplicity, and user experience.</p>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">💡 Innovation First</h3>
+                    <p>We don't just list properties - we use AI to make the entire process smarter, faster, and more transparent.</p>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">🤝 Community Driven</h3>
+                    <p>Your feedback shapes our product. As beta testers, you get to influence the future of property transactions in India.</p>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">💸 Zero Hidden Costs</h3>
+                    <p>What you see is what you get. No surprise fees, no premium tiers hiding basic features, complete transparency.</p>
+                </div>
+                
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 10px;">🎨 Social Media Integration</h3>
+                    <p>First platform in India to allow property owners to add YouTube tours, Instagram galleries, and Facebook pages directly to listings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta">
+            <h2>🎊 Join Our FREE Beta Testing Program!</h2>
+            <p>Be among the first to experience the future of property listings in India. Limited slots available!</p>
+            <p style="font-size: 1rem; color: #999; margin-bottom: 20px;">
+                ⏰ Beta offer: List unlimited properties for FREE | No credit card required | No hidden charges
+            </p>
+            <a href="https://indiapropertyads.netlify.app" class="cta-button">Get Started Now →</a>
+            <p style="margin-top: 30px; font-size: 0.9rem; color: #999;">
+                Already 1000+ properties listed | 5000+ active users | Join the revolution!
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>IndiaPropertyAds</strong> - Transforming Real Estate with AI</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                📧 Contact: support@indiapropertyads.com | 🌐 Website: indiapropertyads.netlify.app
+            </p>
+            <p style="margin-top: 15px; font-size: 0.8rem; color: #999;">
+                © 2024 IndiaPropertyAds. All rights reserved. | Beta Version
+            </p>
+        </div>
+    </div>
+</body>
+</html>
