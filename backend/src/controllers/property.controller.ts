@@ -13,6 +13,24 @@ export const createProperty = async (req: AuthRequest, res: Response): Promise<v
       owner: req.user?.userId
     };
     
+    // Check for duplicate property
+    const existingProperty = await Property.findOne({
+      owner: req.user?.userId,
+      title: propertyData.title,
+      'address.city': propertyData.address?.city,
+      'address.fullAddress': propertyData.address?.fullAddress,
+      status: { $ne: 'sold' } // Don't check against sold properties
+    });
+
+    if (existingProperty) {
+      res.status(409).json({
+        success: false,
+        message: 'A property with the same title and address already exists',
+        duplicateId: existingProperty._id
+      });
+      return;
+    }
+    
     // Agents can publish directly, owners need approval
     if (req.user?.role === 'agent') {
       propertyData.status = 'approved';

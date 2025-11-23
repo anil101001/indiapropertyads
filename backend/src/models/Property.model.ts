@@ -64,6 +64,15 @@ export interface IProperty extends Document {
     order: number;
   }[];
   
+  // Social Media Links
+  socialMedia?: {
+    youtube?: string;
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    website?: string;
+  };
+  
   // Ownership
   owner: mongoose.Types.ObjectId; // Reference to User
   
@@ -258,6 +267,60 @@ const PropertySchema = new Schema<IProperty>(
         required: true
       }
     }],
+    
+    // Social Media Links
+    socialMedia: {
+      youtube: {
+        type: String,
+        validate: {
+          validator: function(v: string) {
+            if (!v) return true;
+            return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(v);
+          },
+          message: 'Please enter a valid YouTube URL'
+        }
+      },
+      facebook: {
+        type: String,
+        validate: {
+          validator: function(v: string) {
+            if (!v) return true;
+            return /^(https?:\/\/)?(www\.)?facebook\.com\/.+$/.test(v);
+          },
+          message: 'Please enter a valid Facebook URL'
+        }
+      },
+      instagram: {
+        type: String,
+        validate: {
+          validator: function(v: string) {
+            if (!v) return true;
+            return /^(https?:\/\/)?(www\.)?instagram\.com\/.+$/.test(v);
+          },
+          message: 'Please enter a valid Instagram URL'
+        }
+      },
+      twitter: {
+        type: String,
+        validate: {
+          validator: function(v: string) {
+            if (!v) return true;
+            return /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/.+$/.test(v);
+          },
+          message: 'Please enter a valid Twitter/X URL'
+        }
+      },
+      website: {
+        type: String,
+        validate: {
+          validator: function(v: string) {
+            if (!v) return true;
+            return /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(v);
+          },
+          message: 'Please enter a valid website URL'
+        }
+      }
+    },
     
     // Ownership
     owner: {

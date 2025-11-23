@@ -20,7 +20,7 @@ export default function AddProperty() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   const [, setUploading] = useState(false);
-  const [, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -54,6 +54,12 @@ export default function AddProperty() {
     possession: 'immediate',
     // Amenities
     amenities: [] as string[],
+    // Social Media
+    youtube: '',
+    facebook: '',
+    instagram: '',
+    twitter: '',
+    website: '',
   });
 
   const [aiSuggestions, setAiSuggestions] = useState({
@@ -353,6 +359,13 @@ export default function AddProperty() {
         },
         amenities: formData.amenities,
         images: imagesToUse,
+        socialMedia: {
+          youtube: formData.youtube || undefined,
+          facebook: formData.facebook || undefined,
+          instagram: formData.instagram || undefined,
+          twitter: formData.twitter || undefined,
+          website: formData.website || undefined,
+        },
       };
 
       const response = await propertyService.createProperty(propertyData);
@@ -362,7 +375,12 @@ export default function AddProperty() {
         navigate('/my-properties');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to create property');
+      if (err.response?.status === 409) {
+        setError('⚠️ A property with the same title and address already exists. Please check your listings or modify the property details.');
+      } else {
+        setError(err.message || 'Failed to create property');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSubmitting(false);
     }
@@ -948,6 +966,84 @@ export default function AddProperty() {
                   </div>
                 </div>
               )}
+
+              {/* Social Media Links (Optional) */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Social Media & Links (Optional)</h3>
+                <p className="text-sm text-gray-600 mb-4">Share links to property videos, virtual tours, or social media pages</p>
+                
+                <div className="space-y-4">
+                  {/* YouTube */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      📺 YouTube Video/Tour Link
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.youtube}
+                      onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Facebook */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      📘 Facebook Page/Post
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.facebook}
+                      onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                      placeholder="https://facebook.com/..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Instagram */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      📷 Instagram Profile/Post
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                      placeholder="https://instagram.com/..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Twitter/X */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      🐦 Twitter/X Profile
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.twitter}
+                      onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                      placeholder="https://twitter.com/... or https://x.com/..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Website */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      🌐 Property Website
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      placeholder="https://example.com"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -973,10 +1069,24 @@ export default function AddProperty() {
             ) : (
               <button
                 type="submit"
-                className="ml-auto px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
+                disabled={submitting}
+                className={`ml-auto px-8 py-3 rounded-lg font-semibold transition flex items-center gap-2 ${
+                  submitting
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                <CheckCircle className="h-5 w-5" />
-                Submit Property
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5" />
+                    Submit Property
+                  </>
+                )}
               </button>
             )}
           </div>

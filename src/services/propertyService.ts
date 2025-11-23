@@ -41,6 +41,13 @@ export interface Property {
     isCover: boolean;
     order: number;
   }[];
+  socialMedia?: {
+    youtube?: string;
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    website?: string;
+  };
   owner: {
     _id: string;
     profile: {

@@ -306,6 +306,99 @@ export default function PropertyDetail() {
               </div>
             </div>
 
+            {/* Social Media Links */}
+            {property.socialMedia && (property.socialMedia.youtube || property.socialMedia.facebook || property.socialMedia.instagram || property.socialMedia.twitter || property.socialMedia.website) && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">More Information</h2>
+                <div className="space-y-3">
+                  {property.socialMedia.youtube && (
+                    <a 
+                      href={property.socialMedia.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition group"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition">
+                        <span className="text-xl">📺</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">YouTube Video/Tour</p>
+                        <p className="text-sm text-gray-600 truncate">{property.socialMedia.youtube}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {property.socialMedia.facebook && (
+                    <a 
+                      href={property.socialMedia.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition group"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition">
+                        <span className="text-xl">📘</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">Facebook Page</p>
+                        <p className="text-sm text-gray-600 truncate">{property.socialMedia.facebook}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {property.socialMedia.instagram && (
+                    <a 
+                      href={property.socialMedia.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-pink-50 transition group"
+                    >
+                      <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition">
+                        <span className="text-xl">📷</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">Instagram</p>
+                        <p className="text-sm text-gray-600 truncate">{property.socialMedia.instagram}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {property.socialMedia.twitter && (
+                    <a 
+                      href={property.socialMedia.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-sky-50 transition group"
+                    >
+                      <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center group-hover:bg-sky-200 transition">
+                        <span className="text-xl">🐦</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">Twitter/X</p>
+                        <p className="text-sm text-gray-600 truncate">{property.socialMedia.twitter}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {property.socialMedia.website && (
+                    <a 
+                      href={property.socialMedia.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 transition group"
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition">
+                        <span className="text-xl">🌐</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">Property Website</p>
+                        <p className="text-sm text-gray-600 truncate">{property.socialMedia.website}</p>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Location */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Location</h2>
