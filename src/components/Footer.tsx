@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Building2, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -19,17 +19,50 @@ export default function Footer() {
               Discover, price, and transact property with confidence.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-primary-500 transition">
+              <a 
+                href="https://www.linkedin.com/in/sethghanshyam-yadav-bb3aa5159" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary-500 transition"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+              <a 
+                href="https://youtube.com/@indiapropertyads" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary-500 transition"
+                aria-label="YouTube"
+              >
+                <Youtube className="h-5 w-5" />
+              </a>
+              <a 
+                href="https://www.facebook.com/share/17gxQPxAZT/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary-500 transition"
+                aria-label="Facebook"
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary-500 transition">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="hover:text-primary-500 transition">
+              <a 
+                href="https://www.instagram.com/indiapropertyads" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary-500 transition"
+                aria-label="Instagram"
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary-500 transition">
-                <Linkedin className="h-5 w-5" />
+              <a 
+                href="https://x.com/indiapropertyad" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary-500 transition"
+                aria-label="X (Twitter)"
+              >
+                <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>
