@@ -328,6 +328,7 @@ export default function AddProperty() {
         description: formData.description,
         propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom',
         listingType: formData.listingType as 'sale' | 'rent',
+        plotType: formData.propertyType === 'plot' ? (formData.plotType as 'gated-community' | 'independent') : undefined,
         address: {
           fullAddress: formData.fullAddress,
           city: formData.city,

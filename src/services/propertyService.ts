@@ -6,6 +6,7 @@ export interface Property {
   description: string;
   propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
   listingType: 'sale' | 'rent';
+  plotType?: 'gated-community' | 'independent';
   address: {
     fullAddress: string;
     city: string;

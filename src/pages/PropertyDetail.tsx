@@ -238,20 +238,26 @@ export default function PropertyDetail() {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Property Features</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Bed className="h-6 w-6 text-primary-600" />
-                  <div>
-                    <p className="text-sm text-gray-600">Bedrooms</p>
-                    <p className="font-semibold text-gray-900">{property.specs.bedrooms}</p>
+                {/* Bedrooms - Only for residential */}
+                {property.specs.bedrooms > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Bed className="h-6 w-6 text-primary-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Bedrooms</p>
+                      <p className="font-semibold text-gray-900">{property.specs.bedrooms}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Bath className="h-6 w-6 text-primary-600" />
-                  <div>
-                    <p className="text-sm text-gray-600">Bathrooms</p>
-                    <p className="font-semibold text-gray-900">{property.specs.bathrooms}</p>
+                )}
+                {/* Bathrooms - Only for residential */}
+                {property.specs.bathrooms > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Bath className="h-6 w-6 text-primary-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Bathrooms</p>
+                      <p className="font-semibold text-gray-900">{property.specs.bathrooms}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Maximize className="h-6 w-6 text-primary-600" />
                   <div>

@@ -180,7 +180,7 @@ const PropertySchema = new Schema<IProperty>(
       bathrooms: {
         type: Number,
         required: [true, 'Number of bathrooms is required'],
-        min: [1, 'At least 1 bathroom is required'],
+        min: [0, 'Bathrooms cannot be negative'],
         max: [20, 'Bathrooms cannot exceed 20']
       },
       balconies: {

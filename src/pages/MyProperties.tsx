@@ -280,7 +280,9 @@ export default function MyProperties() {
                         {formatPrice(property.pricing.expectedPrice)}
                       </span>
                       <span className="text-gray-600">{property.specs.carpetArea} sqft</span>
-                      <span className="text-gray-600">{property.specs.bedrooms} BHK</span>
+                      {property.specs.bedrooms > 0 && (
+                        <span className="text-gray-600">{property.specs.bedrooms} BHK</span>
+                      )}
                     </div>
 
                     {/* Analytics */}

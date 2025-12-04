@@ -39,6 +39,11 @@ export default function PropertyListing() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState(filters.search);
 
+  // Helper to check if selected property type is commercial
+  const isCommercialPropertyType = () => {
+    return ['shop', 'office', 'warehouse', 'showroom'].includes(filters.propertyType);
+  };
+
   // Indian cities list (top 50 cities)
   const indianCities = [
     'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad',
@@ -96,7 +101,14 @@ export default function PropertyListing() {
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters({ ...filters, [key]: value });
+    const newFilters = { ...filters, [key]: value };
+    
+    // Clear bedrooms filter when switching to commercial property type
+    if (key === 'propertyType' && ['shop', 'office', 'warehouse', 'showroom'].includes(value)) {
+      newFilters.bedrooms = '';
+    }
+    
+    setFilters(newFilters);
     setPagination({ ...pagination, page: 1 }); // Reset to first page
   };
 
@@ -280,22 +292,24 @@ export default function PropertyListing() {
                   />
                 </div>
 
-                {/* Bedrooms */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
-                  <select
-                    value={filters.bedrooms}
-                    onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="">Any Bedrooms</option>
-                    <option value="1">1 BHK</option>
-                    <option value="2">2 BHK</option>
-                    <option value="3">3 BHK</option>
-                    <option value="4">4 BHK</option>
-                    <option value="5">5+ BHK</option>
-                  </select>
-                </div>
+                {/* Bedrooms - Only show for residential properties */}
+                {!isCommercialPropertyType() && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                    <select
+                      value={filters.bedrooms}
+                      onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    >
+                      <option value="">Any Bedrooms</option>
+                      <option value="1">1 BHK</option>
+                      <option value="2">2 BHK</option>
+                      <option value="3">3 BHK</option>
+                      <option value="4">4 BHK</option>
+                      <option value="5">5+ BHK</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -422,10 +436,12 @@ export default function PropertyListing() {
                       <span className="text-sm">{property.specs.bedrooms} Bed</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-1">
-                    <Bath className="h-4 w-4" />
-                    <span className="text-sm">{property.specs.bathrooms} Bath</span>
-                  </div>
+                  {property.specs.bathrooms > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Bath className="h-4 w-4" />
+                      <span className="text-sm">{property.specs.bathrooms} Bath</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-1">
                     <Maximize className="h-4 w-4" />
                     <span className="text-sm">{property.specs.carpetArea} sqft</span>
