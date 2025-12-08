@@ -1,7 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import Property from '../models/Property.model';
+import User from '../models/User.model';
 import logger from '../utils/logger';
+import { parseSearchQuery } from '../utils/searchParser';
 
 // @route   POST /api/v1/properties
 // @desc    Create new property
@@ -89,7 +91,8 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       limit = 20,
       sort = '-publishedAt',
       search,
-      q // Support both 'search' and 'q' parameters
+      q, // Support both 'search' and 'q' parameters
+      applyAffordability // New parameter to enable affordability filtering
     } = req.query;
     
     // Debug logging
@@ -108,30 +111,71 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     }
     
     // Text search across multiple fields (support both 'search' and 'q' parameters)
-    const searchTerm = (search || q) as string;
-    if (searchTerm && searchTerm.trim()) {
-      const searchRegex = new RegExp(searchTerm.trim(), 'i');
-      query.$or = [
-        { title: searchRegex },
-        { description: searchRegex },
-        { 'address.city': searchRegex },
-        { 'address.state': searchRegex },
-        { 'address.landmark': searchRegex },
-        { 'address.fullAddress': searchRegex }
-      ];
-      logger.info(`🔍 Text search: "${searchTerm}"`);
+    const rawSearchTerm = (search || q) as string;
+    let parsedSearch: any = { text: rawSearchTerm };
+
+    // Parse natural language search if provided
+    if (rawSearchTerm && rawSearchTerm.trim()) {
+      parsedSearch = parseSearchQuery(rawSearchTerm.trim());
+      logger.info(`🧠 Parsed search: ${JSON.stringify(parsedSearch)}`);
+      
+      const searchRegex = new RegExp(parsedSearch.text, 'i');
+      if (parsedSearch.text) {
+        query.$or = [
+          { title: searchRegex },
+          { description: searchRegex },
+          { 'address.city': searchRegex },
+          { 'address.state': searchRegex },
+          { 'address.landmark': searchRegex },
+          { 'address.fullAddress': searchRegex }
+        ];
+        logger.info(`🔍 Text search: "${parsedSearch.text}"`);
+      }
     }
     
     if (city) query['address.city'] = new RegExp(city as string, 'i');
     if (propertyType) query.propertyType = propertyType;
     if (listingType) query.listingType = listingType;
-    if (bedrooms) query['specs.bedrooms'] = Number(bedrooms);
     
-    // Price range filter
-    if (minPrice || maxPrice) {
+    // Bedrooms: explicit filter > parsed from search
+    if (bedrooms) {
+      query['specs.bedrooms'] = Number(bedrooms);
+    } else if (parsedSearch.bedrooms) {
+      query['specs.bedrooms'] = parsedSearch.bedrooms;
+      logger.info(`🛏️ Parsed bedrooms: ${parsedSearch.bedrooms}`);
+    }
+    
+    // Price range filter - Apply affordability if requested
+    // Priority: Explicit filter > Parsed from search > User budget (if affordability enabled)
+    let effectiveMinPrice = minPrice ? Number(minPrice) : parsedSearch.minPrice;
+    let effectiveMaxPrice = maxPrice ? Number(maxPrice) : parsedSearch.maxPrice;
+    
+    // Apply affordability filtering based on user preferences if not overridden by explicit/parsed filters
+    if (applyAffordability === 'true' && req.user?.userId) {
+      try {
+        const user = await User.findById(req.user.userId);
+        if (user?.preferences?.budget) {
+          // Use user's budget preferences if no explicit/parsed price filters provided
+          if (effectiveMinPrice === undefined && user.preferences.budget.min) {
+            effectiveMinPrice = user.preferences.budget.min;
+            logger.info(`💰 Applied user budget min: ${effectiveMinPrice}`);
+          }
+          if (effectiveMaxPrice === undefined && user.preferences.budget.max) {
+            effectiveMaxPrice = user.preferences.budget.max;
+            logger.info(`💰 Applied user budget max: ${effectiveMaxPrice}`);
+          }
+        }
+      } catch (error) {
+        logger.error('Error fetching user preferences:', error);
+      }
+    }
+    
+    // Apply price filters
+    if (effectiveMinPrice || effectiveMaxPrice) {
       query['pricing.expectedPrice'] = {};
-      if (minPrice) query['pricing.expectedPrice'].$gte = Number(minPrice);
-      if (maxPrice) query['pricing.expectedPrice'].$lte = Number(maxPrice);
+      if (effectiveMinPrice) query['pricing.expectedPrice'].$gte = effectiveMinPrice;
+      if (effectiveMaxPrice) query['pricing.expectedPrice'].$lte = effectiveMaxPrice;
+      logger.info(`💵 Price filter applied: ${effectiveMinPrice || 'any'} - ${effectiveMaxPrice || 'any'}`);
     }
     
     // Pagination

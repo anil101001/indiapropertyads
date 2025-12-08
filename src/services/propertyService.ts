@@ -82,6 +82,7 @@ export interface PropertyFilters {
   page?: number;
   limit?: number;
   sort?: string;
+  applyAffordability?: string;
 }
 
 export interface PropertyListResponse {

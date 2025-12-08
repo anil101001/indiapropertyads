@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle, X, ArrowUpDown } from 'lucide-react';
+import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle, X, ArrowUpDown, Settings } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { propertyService, Property } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
+import BudgetPreferencesModal from '../components/BudgetPreferencesModal';
 
 // Format price in Indian format
 const formatPrice = (price: number) => {
@@ -33,11 +34,13 @@ export default function PropertyListing() {
     minPrice: '',
     maxPrice: '',
     bedrooms: '',
+    applyAffordability: false, // New affordability filter
   });
   const [sortBy, setSortBy] = useState('-publishedAt'); // Default: newest first
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState(filters.search);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
 
   // Helper to check if selected property type is commercial
   const isCommercialPropertyType = () => {
@@ -68,7 +71,7 @@ export default function PropertyListing() {
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, sortBy, user?.role]);
+  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, filters.applyAffordability, sortBy, user?.role]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -87,6 +90,7 @@ export default function PropertyListing() {
         bedrooms: filters.bedrooms ? Number(filters.bedrooms) : undefined,
         status: 'approved', // Only approved properties
         sort: sortBy,
+        applyAffordability: filters.applyAffordability ? 'true' : undefined,
       });
 
       if (response.success) {
@@ -126,6 +130,7 @@ export default function PropertyListing() {
       minPrice: '',
       maxPrice: '',
       bedrooms: '',
+      applyAffordability: false,
     });
     setSearchInput('');
     setSortBy('-publishedAt');
@@ -139,6 +144,7 @@ export default function PropertyListing() {
     if (filters.city) count++;
     if (filters.minPrice || filters.maxPrice) count++;
     if (filters.bedrooms) count++;
+    if (filters.applyAffordability) count++;
     return count;
   };
 
@@ -311,6 +317,35 @@ export default function PropertyListing() {
                   </div>
                 )}
               </div>
+
+              {/* Affordability Filter - Only show for logged-in users */}
+              {user && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start justify-between gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer flex-1">
+                      <input
+                        type="checkbox"
+                        checked={filters.applyAffordability}
+                        onChange={(e) => setFilters({ ...filters, applyAffordability: e.target.checked })}
+                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                      />
+                      <div>
+                        <span className="text-sm font-semibold text-gray-900">Apply My Budget Filter</span>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Show only properties within my saved budget preferences
+                        </p>
+                      </div>
+                    </label>
+                    <button
+                      onClick={() => setShowBudgetModal(true)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition text-sm font-medium"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Set Budget
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -505,6 +540,18 @@ export default function PropertyListing() {
           </div>
         )}
       </div>
+
+      {/* Budget Preferences Modal */}
+      <BudgetPreferencesModal
+        isOpen={showBudgetModal}
+        onClose={() => setShowBudgetModal(false)}
+        onSave={() => {
+          // Refresh properties if affordability filter is active
+          if (filters.applyAffordability) {
+            fetchProperties();
+          }
+        }}
+      />
     </div>
   );
 }

@@ -37,7 +37,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
 // @access  Private
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { profile } = req.body;
+    const { profile, preferences } = req.body;
     
     const user = await User.findById(req.user?.userId);
     
@@ -59,6 +59,15 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
           ...profile.location
         };
       }
+    }
+    
+    // Update preferences (budget, property types, cities)
+    if (preferences) {
+      user.preferences = {
+        ...user.preferences,
+        ...preferences
+      };
+      logger.info(`Preferences updated for user: ${user.email} - Budget: ${preferences.budget?.min}-${preferences.budget?.max}`);
     }
     
     await user.save();

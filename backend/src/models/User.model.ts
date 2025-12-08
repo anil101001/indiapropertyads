@@ -15,6 +15,14 @@ export interface IUser extends Document {
       pincode?: string;
     };
   };
+  preferences?: {
+    budget?: {
+      min?: number;
+      max?: number;
+    };
+    propertyTypes?: string[];
+    preferredCities?: string[];
+  };
   verification: {
     emailVerified: boolean;
     phoneVerified: boolean;
@@ -85,6 +93,14 @@ const UserSchema = new Schema<IUser>(
         state: String,
         pincode: String
       }
+    },
+    preferences: {
+      budget: {
+        min: Number,
+        max: Number
+      },
+      propertyTypes: [String],
+      preferredCities: [String]
     },
     verification: {
       emailVerified: {
