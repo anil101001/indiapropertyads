@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle, X, ArrowUpDown, Settings } from 'lucide-react';
+import { Search, SlidersHorizontal, MapPin, Bed, Bath, Maximize, Heart, Eye, Loader2, AlertCircle, X, ArrowUpDown, Settings, Info } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { propertyService, Property } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
 import BudgetPreferencesModal from '../components/BudgetPreferencesModal';
+import { api } from '../services/api';
 
 // Format price in Indian format
 const formatPrice = (price: number) => {
@@ -41,6 +42,8 @@ export default function PropertyListing() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState(filters.search);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [userBudget, setUserBudget] = useState<{ min?: number; max?: number } | null>(null);
+  const [showBudgetBanner, setShowBudgetBanner] = useState(true);
 
   // Helper to check if selected property type is commercial
   const isCommercialPropertyType = () => {
@@ -57,6 +60,23 @@ export default function PropertyListing() {
     'Ranchi', 'Howrah', 'Coimbatore', 'Jabalpur', 'Gwalior', 'Vijayawada', 'Jodhpur',
     'Madurai', 'Raipur', 'Kota', 'Chandigarh', 'Guwahati', 'Solapur', 'Hubli-Dharwad'
   ].sort();
+
+  // Fetch user budget preferences
+  useEffect(() => {
+    const fetchUserBudget = async () => {
+      if (user) {
+        try {
+          const response = await api.get('/users/me');
+          if (response.success && response.data.preferences?.budget) {
+            setUserBudget(response.data.preferences.budget);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user budget:', error);
+        }
+      }
+    };
+    fetchUserBudget();
+  }, [user]);
 
   // Debounce search input
   useEffect(() => {
@@ -329,11 +349,16 @@ export default function PropertyListing() {
                         onChange={(e) => setFilters({ ...filters, applyAffordability: e.target.checked })}
                         className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                       />
-                      <div>
+                      <div className="flex-1">
                         <span className="text-sm font-semibold text-gray-900">Apply My Budget Filter</span>
                         <p className="text-xs text-gray-600 mt-1">
                           Show only properties within my saved budget preferences
                         </p>
+                        {userBudget && (userBudget.min || userBudget.max) && (
+                          <div className="mt-2 text-xs font-medium text-blue-700">
+                            Budget Range: {userBudget.min ? formatPrice(userBudget.min) : 'Any'} - {userBudget.max ? formatPrice(userBudget.max) : 'Any'}
+                          </div>
+                        )}
                       </div>
                     </label>
                     <button
@@ -387,6 +412,33 @@ export default function PropertyListing() {
             </button>
           </div>
         </div>
+
+        {/* Budget Filter Active Banner */}
+        {!loading && filters.applyAffordability && userBudget && (userBudget.min || userBudget.max) && showBudgetBanner && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">
+                    Filtering by your budget preferences
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Showing properties between {userBudget.min ? formatPrice(userBudget.min) : 'any amount'} and {userBudget.max ? formatPrice(userBudget.max) : 'any amount'}
+                    {properties.length > 0 && ` • ${properties.length} ${properties.length === 1 ? 'property' : 'properties'} found`}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBudgetBanner(false)}
+                className="text-blue-600 hover:text-blue-800 transition"
+                aria-label="Dismiss banner"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Loading State */}
         {loading && (
@@ -545,7 +597,18 @@ export default function PropertyListing() {
       <BudgetPreferencesModal
         isOpen={showBudgetModal}
         onClose={() => setShowBudgetModal(false)}
-        onSave={() => {
+        onSave={async () => {
+          // Refresh user budget
+          try {
+            const response = await api.get('/users/me');
+            if (response.success && response.data.preferences?.budget) {
+              setUserBudget(response.data.preferences.budget);
+              setShowBudgetBanner(true); // Show banner after saving
+            }
+          } catch (error) {
+            console.error('Failed to refresh user budget:', error);
+          }
+          
           // Refresh properties if affordability filter is active
           if (filters.applyAffordability) {
             fetchProperties();
