@@ -121,14 +121,20 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       
       const searchRegex = new RegExp(parsedSearch.text, 'i');
       if (parsedSearch.text) {
-        query.$or = [
-          { title: searchRegex },
-          { description: searchRegex },
-          { 'address.city': searchRegex },
-          { 'address.state': searchRegex },
-          { 'address.landmark': searchRegex },
-          { 'address.fullAddress': searchRegex }
-        ];
+        // Use $and to ensure text search is combined with other filters
+        if (!query.$and) {
+          query.$and = [];
+        }
+        query.$and.push({
+          $or: [
+            { title: searchRegex },
+            { description: searchRegex },
+            { 'address.city': searchRegex },
+            { 'address.state': searchRegex },
+            { 'address.landmark': searchRegex },
+            { 'address.fullAddress': searchRegex }
+          ]
+        });
         logger.info(`🔍 Text search: "${parsedSearch.text}"`);
       }
     }
