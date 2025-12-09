@@ -70,61 +70,74 @@ export const parseSearchQuery = (query: string): ParsedSearch => {
     // Range detected (e.g. "1 to 2 crore" or "50 lakhs and 1 crore")
     const minVal = parseFloat(rangeMatch[1]);
     const maxVal = parseFloat(rangeMatch[3]); // Note: Group 3 now (was 2)
-    const unit1 = (rangeMatch[2] || '').toLowerCase(); // First unit (optional)
-    const unit2 = (rangeMatch[4] || '').toLowerCase(); // Second unit (optional)
     
-    // Determine which units to use
-    // Priority: If both units provided, use them independently
-    // If only one unit, apply to both numbers
-    let minUnit = unit1 || unit2 || '';
-    let maxUnit = unit2 || unit1 || '';
-    
-    if (minUnit) {
-      minPrice = parsePrice(minVal.toString(), minUnit);
-    } else {
-      minPrice = minVal; // No unit, use raw number
+    // Validate numbers
+    if (!isNaN(minVal) && !isNaN(maxVal)) {
+      const unit1 = (rangeMatch[2] || '').toLowerCase(); // First unit (optional)
+      const unit2 = (rangeMatch[4] || '').toLowerCase(); // Second unit (optional)
+      
+      // Determine which units to use
+      // Priority: If both units provided, use them independently
+      // If only one unit, apply to both numbers
+      let minUnit = unit1 || unit2 || '';
+      let maxUnit = unit2 || unit1 || '';
+      
+      if (minUnit) {
+        minPrice = parsePrice(minVal.toString(), minUnit);
+      } else {
+        minPrice = minVal; // No unit, use raw number
+      }
+      
+      if (maxUnit) {
+        maxPrice = parsePrice(maxVal.toString(), maxUnit);
+      } else {
+        maxPrice = maxVal; // No unit, use raw number
+      }
+      
+      // Validation: Ensure min <= max and both are positive
+      if (minPrice < 0) minPrice = 0;
+      if (maxPrice < 0) maxPrice = 0;
+      
+      if (minPrice && maxPrice && minPrice > maxPrice) {
+        // Swap if user accidentally put them in wrong order
+        [minPrice, maxPrice] = [maxPrice, minPrice];
+      }
+      
+      // Clean text
+      text = text.replace(rangeMatch[0], '').trim();
     }
-    
-    if (maxUnit) {
-      maxPrice = parsePrice(maxVal.toString(), maxUnit);
-    } else {
-      maxPrice = maxVal; // No unit, use raw number
-    }
-    
-    // Validation: Ensure min <= max
-    if (minPrice && maxPrice && minPrice > maxPrice) {
-      // Swap if user accidentally put them in wrong order
-      [minPrice, maxPrice] = [maxPrice, minPrice];
-    }
-    
-    // Clean text
-    text = text.replace(rangeMatch[0], '').trim();
   } else {
     // Single bound checks
     if (underMatch) {
       const val = parseFloat(underMatch[1]);
-      const unit = (underMatch[2] || '').toLowerCase();
       
-      if (unit) {
-        maxPrice = parsePrice(val.toString(), unit);
-      } else {
-        maxPrice = val;
+      if (!isNaN(val) && val >= 0) {
+        const unit = (underMatch[2] || '').toLowerCase();
+        
+        if (unit) {
+          maxPrice = parsePrice(val.toString(), unit);
+        } else {
+          maxPrice = val;
+        }
+        
+        text = text.replace(underMatch[0], '').trim();
       }
-      
-      text = text.replace(underMatch[0], '').trim();
     }
 
     if (aboveMatch) {
       const val = parseFloat(aboveMatch[1]);
-      const unit = (aboveMatch[2] || '').toLowerCase();
       
-      if (unit) {
-        minPrice = parsePrice(val.toString(), unit);
-      } else {
-        minPrice = val;
+      if (!isNaN(val) && val >= 0) {
+        const unit = (aboveMatch[2] || '').toLowerCase();
+        
+        if (unit) {
+          minPrice = parsePrice(val.toString(), unit);
+        } else {
+          minPrice = val;
+        }
+        
+        text = text.replace(aboveMatch[0], '').trim();
       }
-      
-      text = text.replace(aboveMatch[0], '').trim();
     }
   }
   

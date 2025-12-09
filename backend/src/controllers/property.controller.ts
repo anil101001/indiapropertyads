@@ -114,32 +114,56 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     const rawSearchTerm = (search || q) as string;
     let parsedSearch: any = { text: rawSearchTerm };
 
+    // Helper function to escape regex special characters
+    const escapeRegex = (str: string): string => {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
     // Parse natural language search if provided
     if (rawSearchTerm && rawSearchTerm.trim()) {
       parsedSearch = parseSearchQuery(rawSearchTerm.trim());
       logger.info(`🧠 Parsed search: ${JSON.stringify(parsedSearch)}`);
       
-      const searchRegex = new RegExp(parsedSearch.text, 'i');
-      if (parsedSearch.text) {
+      if (parsedSearch.text && parsedSearch.text.trim()) {
+        // Escape special regex characters to prevent regex errors
+        const escapedText = escapeRegex(parsedSearch.text.trim());
+        const searchRegex = new RegExp(escapedText, 'i');
+        
         // Use $and to ensure text search is combined with other filters
         if (!query.$and) {
           query.$and = [];
         }
-        query.$and.push({
-          $or: [
-            { title: searchRegex },
-            { description: searchRegex },
-            { 'address.city': searchRegex },
-            { 'address.state': searchRegex },
-            { 'address.landmark': searchRegex },
-            { 'address.fullAddress': searchRegex }
-          ]
-        });
-        logger.info(`🔍 Text search: "${parsedSearch.text}"`);
+        
+        // If explicit city filter is provided, exclude city from text search $or
+        // to avoid conflicts between explicit city filter and text search
+        const searchFields = city 
+          ? [
+              { title: searchRegex },
+              { description: searchRegex },
+              { 'address.state': searchRegex },
+              { 'address.landmark': searchRegex },
+              { 'address.fullAddress': searchRegex }
+            ]
+          : [
+              { title: searchRegex },
+              { description: searchRegex },
+              { 'address.city': searchRegex },
+              { 'address.state': searchRegex },
+              { 'address.landmark': searchRegex },
+              { 'address.fullAddress': searchRegex }
+            ];
+        
+        query.$and.push({ $or: searchFields });
+        logger.info(`🔍 Text search: "${parsedSearch.text}" (escaped: "${escapedText}")`);
       }
     }
     
-    if (city) query['address.city'] = new RegExp(city as string, 'i');
+    // Apply explicit city filter (exact match for city name to avoid "Mumbai" matching "Navi Mumbai")
+    if (city) {
+      const escapedCity = escapeRegex(city as string);
+      query['address.city'] = new RegExp(`^${escapedCity}$`, 'i');
+      logger.info(`🏙️ City filter: "${city}" (exact match)`);
+    }
     if (propertyType) query.propertyType = propertyType;
     if (listingType) query.listingType = listingType;
     
@@ -156,6 +180,22 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     let effectiveMinPrice = minPrice ? Number(minPrice) : parsedSearch.minPrice;
     let effectiveMaxPrice = maxPrice ? Number(maxPrice) : parsedSearch.maxPrice;
     
+    // Validate price values
+    if (effectiveMinPrice !== undefined && (isNaN(effectiveMinPrice) || effectiveMinPrice < 0)) {
+      logger.warn(`⚠️ Invalid minPrice: ${minPrice}, ignoring`);
+      effectiveMinPrice = undefined;
+    }
+    if (effectiveMaxPrice !== undefined && (isNaN(effectiveMaxPrice) || effectiveMaxPrice < 0)) {
+      logger.warn(`⚠️ Invalid maxPrice: ${maxPrice}, ignoring`);
+      effectiveMaxPrice = undefined;
+    }
+    
+    // Ensure min <= max
+    if (effectiveMinPrice !== undefined && effectiveMaxPrice !== undefined && effectiveMinPrice > effectiveMaxPrice) {
+      logger.warn(`⚠️ minPrice (${effectiveMinPrice}) > maxPrice (${effectiveMaxPrice}), swapping`);
+      [effectiveMinPrice, effectiveMaxPrice] = [effectiveMaxPrice, effectiveMinPrice];
+    }
+    
     // Apply affordability filtering based on user preferences if not overridden by explicit/parsed filters
     if (applyAffordability === 'true' && req.user?.userId) {
       try {
@@ -170,6 +210,8 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
             effectiveMaxPrice = user.preferences.budget.max;
             logger.info(`💰 Applied user budget max: ${effectiveMaxPrice}`);
           }
+        } else {
+          logger.info(`ℹ️ User has no budget preferences saved`);
         }
       } catch (error) {
         logger.error('Error fetching user preferences:', error);
@@ -177,10 +219,14 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     }
     
     // Apply price filters
-    if (effectiveMinPrice || effectiveMaxPrice) {
+    if (effectiveMinPrice !== undefined || effectiveMaxPrice !== undefined) {
       query['pricing.expectedPrice'] = {};
-      if (effectiveMinPrice) query['pricing.expectedPrice'].$gte = effectiveMinPrice;
-      if (effectiveMaxPrice) query['pricing.expectedPrice'].$lte = effectiveMaxPrice;
+      if (effectiveMinPrice !== undefined) {
+        query['pricing.expectedPrice'].$gte = effectiveMinPrice;
+      }
+      if (effectiveMaxPrice !== undefined) {
+        query['pricing.expectedPrice'].$lte = effectiveMaxPrice;
+      }
       logger.info(`💵 Price filter applied: ${effectiveMinPrice || 'any'} - ${effectiveMaxPrice || 'any'}`);
     }
     

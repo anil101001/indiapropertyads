@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -23,6 +23,7 @@ export default function AddProperty() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [areaUnit, setAreaUnit] = useState('sqft'); // Default unit
   const [formData, setFormData] = useState({
     // Basic Info
     title: '',
@@ -69,6 +70,15 @@ export default function AddProperty() {
     marketDemand: 'High',
     tags: ['Premium', 'Well-Connected', 'Family-Friendly'],
   });
+
+  // Update default unit when property type changes
+  useEffect(() => {
+    if (formData.propertyType === 'plot') {
+      setAreaUnit('sqyd'); // Default to square yards for plots
+    } else {
+      setAreaUnit('sqft'); // Default to square feet for others
+    }
+  }, [formData.propertyType]);
 
   // Helper to check if property is commercial
   const isCommercial = () => {
@@ -753,12 +763,29 @@ export default function AddProperty() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                   <select
-                    value="sqft"
-                    onChange={(e) => console.log('Area unit:', e.target.value)}
+                    value={areaUnit}
+                    onChange={(e) => setAreaUnit(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
-                    <option value="sqft">Sq.Ft</option>
-                    <option value="sqm">Sq.M</option>
+                    {formData.propertyType === 'plot' ? (
+                      <>
+                        <option value="sqyd">Sq.Yd</option>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="acres">Acres</option>
+                        <option value="hectares">Hectares</option>
+                      </>
+                    ) : formData.propertyType === 'warehouse' ? (
+                      <>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="sqm">Sq.M</option>
+                        <option value="acres">Acres</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="sqm">Sq.M</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

@@ -12,6 +12,7 @@ export default function EditProperty() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [areaUnit, setAreaUnit] = useState('sqft'); // Default unit
 
   // Form data
   const [formData, setFormData] = useState({
@@ -52,6 +53,15 @@ export default function EditProperty() {
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+
+  // Update default unit when property type changes
+  useEffect(() => {
+    if (formData.propertyType === 'plot') {
+      setAreaUnit('sqyd'); // Default to square yards for plots
+    } else {
+      setAreaUnit('sqft'); // Default to square feet for others
+    }
+  }, [formData.propertyType]);
 
   // Helper to check if property is commercial
   const isCommercial = () => {
@@ -505,16 +515,46 @@ export default function EditProperty() {
 
             <div className="space-y-4">
               {/* Carpet Area */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Carpet Area (sqft) *</label>
-                <input
-                  type="number"
-                  required
-                  value={formData.carpetArea}
-                  onChange={(e) => setFormData({ ...formData, carpetArea: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                  placeholder="e.g., 1450"
-                />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Carpet Area *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.carpetArea}
+                    onChange={(e) => setFormData({ ...formData, carpetArea: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                    placeholder="e.g., 1450"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                  <select
+                    value={areaUnit}
+                    onChange={(e) => setAreaUnit(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    {formData.propertyType === 'plot' ? (
+                      <>
+                        <option value="sqyd">Sq.Yd</option>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="acres">Acres</option>
+                        <option value="hectares">Hectares</option>
+                      </>
+                    ) : formData.propertyType === 'warehouse' ? (
+                      <>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="sqm">Sq.M</option>
+                        <option value="acres">Acres</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="sqm">Sq.M</option>
+                      </>
+                    )}
+                  </select>
+                </div>
               </div>
 
               {/* Bedrooms, Bathrooms, Balconies - Only for residential properties */}
