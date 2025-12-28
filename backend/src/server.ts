@@ -18,6 +18,7 @@ import insightsRoutes from './routes/insights.routes';
 import analyticsRoutes from './routes/analytics.routes'; // Conversation Analytics
 import searchRoutes from './routes/search.routes'; // Vector Search
 import { chatRoutes } from './ai-chat'; // AI Chat Module
+import crmRoutes from './routes/crm.routes'; // CRM Module
 
 // Load environment variables with explicit path
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -68,6 +69,7 @@ app.use(`${API_PREFIX}/insights`, insightsRoutes);
 app.use(`${API_PREFIX}/analytics`, analyticsRoutes); // Conversation Analytics
 app.use(`${API_PREFIX}/search`, searchRoutes); // Vector Search
 app.use(`${API_PREFIX}/ai-chat`, chatRoutes); // AI Chat Module
+app.use(`${API_PREFIX}/crm`, crmRoutes); // CRM Module
 
 // 404 Handler
 app.use((_req, res) => {

@@ -1,5 +1,22 @@
 import { api } from './api';
 
+// Land/Plot specific details interface
+export interface LandDetails {
+  plotSubType: 'residential' | 'commercial' | 'industrial' | 'agricultural' | 'sez' | 'mixed-use';
+  zoningClassification: string[];
+  layoutStatus: 'approved-municipal' | 'approved-rera' | 'unapproved' | 'gated-community';
+  ownershipType: 'freehold' | 'leasehold';
+  legalStatus: 'clear-title' | 'litigated' | 'rera-approved';
+  areaUnit: 'sqft' | 'sqm' | 'yards' | 'acres' | 'hectares';
+  plotArea: number;
+  roadAccess?: string;
+  boundaryWall: boolean;
+  waterConnection: boolean;
+  electricityConnection: boolean;
+  cornerPlot?: boolean;
+  gatedSecurity?: boolean;
+}
+
 export interface Property {
   _id: string;
   title: string;
@@ -7,6 +24,7 @@ export interface Property {
   propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
   listingType: 'sale' | 'rent';
   plotType?: 'gated-community' | 'independent';
+  landDetails?: LandDetails;
   address: {
     fullAddress: string;
     city: string;
@@ -83,6 +101,20 @@ export interface PropertyFilters {
   limit?: number;
   sort?: string;
   applyAffordability?: string;
+  // Land/Plot specific filters
+  plotSubType?: string;
+  ownershipType?: string;
+  legalStatus?: string;
+  layoutStatus?: string;
+  zoningClassification?: string; // comma-separated for multi-select
+  boundaryWall?: string;
+  waterConnection?: string;
+  electricityConnection?: string;
+  cornerPlot?: string;
+  gatedSecurity?: string;
+  minPlotArea?: number;
+  maxPlotArea?: number;
+  areaUnit?: string;
 }
 
 export interface PropertyListResponse {

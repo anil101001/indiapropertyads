@@ -31,6 +31,20 @@ export default function AddProperty() {
     propertyType: 'apartment',
     listingType: 'sale',
     plotType: 'gated-community', // For plots only: 'gated-community' or 'independent'
+    // Land/Plot specific details
+    plotSubType: 'residential' as 'residential' | 'commercial' | 'industrial' | 'agricultural' | 'sez' | 'mixed-use',
+    zoningClassification: [] as string[],
+    layoutStatus: 'approved-municipal' as 'approved-municipal' | 'approved-rera' | 'unapproved' | 'gated-community',
+    ownershipType: 'freehold' as 'freehold' | 'leasehold',
+    legalStatus: 'clear-title' as 'clear-title' | 'litigated' | 'rera-approved',
+    plotAreaUnit: 'sqft' as 'sqft' | 'sqm' | 'yards' | 'acres' | 'hectares',
+    plotArea: '',
+    roadAccess: '',
+    boundaryWall: false,
+    waterConnection: false,
+    electricityConnection: false,
+    cornerPlot: false,
+    gatedSecurity: false,
     // Location
     fullAddress: '',
     city: '',
@@ -333,12 +347,12 @@ export default function AddProperty() {
     setError('');
 
     try {
-      const propertyData = {
+      const propertyData: any = {
         title: formData.title,
         description: formData.description,
         propertyType: formData.propertyType as 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom',
         listingType: formData.listingType as 'sale' | 'rent',
-        plotType: formData.propertyType === 'plot' ? (formData.plotType as 'gated-community' | 'independent') : undefined,
+        plotType: formData.propertyType === 'plot' ? (formData.layoutStatus === 'gated-community' ? 'gated-community' : 'independent') : undefined,
         address: {
           fullAddress: formData.fullAddress,
           city: formData.city,
@@ -347,11 +361,11 @@ export default function AddProperty() {
           landmark: formData.landmark,
         },
         specs: {
-          carpetArea: Number(formData.carpetArea),
-          // For commercial properties, set bedrooms/bathrooms/balconies to 0
-          bedrooms: isCommercial() ? 0 : Number(formData.bedrooms),
-          bathrooms: isCommercial() ? 0 : Number(formData.bathrooms),
-          balconies: isCommercial() ? 0 : Number(formData.balconies),
+          carpetArea: formData.propertyType === 'plot' ? Number(formData.plotArea) || 100 : Number(formData.carpetArea),
+          // For commercial properties and plots, set bedrooms/bathrooms/balconies to 0
+          bedrooms: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.bedrooms),
+          bathrooms: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.bathrooms),
+          balconies: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.balconies),
           parking: {
             covered: Number(formData.coveredParking),
             open: Number(formData.openParking),
@@ -378,6 +392,25 @@ export default function AddProperty() {
           website: formData.website || undefined,
         },
       };
+
+      // Add landDetails for plot properties
+      if (formData.propertyType === 'plot') {
+        propertyData.landDetails = {
+          plotSubType: formData.plotSubType,
+          zoningClassification: formData.zoningClassification,
+          layoutStatus: formData.layoutStatus,
+          ownershipType: formData.ownershipType,
+          legalStatus: formData.legalStatus,
+          areaUnit: formData.plotAreaUnit,
+          plotArea: Number(formData.plotArea) || 0,
+          roadAccess: formData.roadAccess || undefined,
+          boundaryWall: formData.boundaryWall,
+          waterConnection: formData.waterConnection,
+          electricityConnection: formData.electricityConnection,
+          cornerPlot: formData.cornerPlot,
+          gatedSecurity: formData.gatedSecurity,
+        };
+      }
 
       const response = await propertyService.createProperty(propertyData);
       
@@ -511,33 +544,195 @@ export default function AddProperty() {
                 </select>
               </div>
 
-              {/* Plot Type - Only show for plots */}
+              {/* Land/Plot Specific Fields - Only show for plots */}
               {formData.propertyType === 'plot' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Plot Type</label>
-                  <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, plotType: 'gated-community' })}
-                      className={`flex-1 py-3 rounded-lg font-semibold transition ${
-                        formData.plotType === 'gated-community'
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                <div className="space-y-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="text-lg font-semibold text-green-800 flex items-center gap-2">
+                    <span>🏞️</span> Land/Plot Details (Required)
+                  </h3>
+
+                  {/* Plot Sub-Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Plot Sub-Type *</label>
+                    <select
+                      value={formData.plotSubType}
+                      onChange={(e) => setFormData({ ...formData, plotSubType: e.target.value as any })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                     >
-                      Gated Community
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, plotType: 'independent' })}
-                      className={`flex-1 py-3 rounded-lg font-semibold transition ${
-                        formData.plotType === 'independent'
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      <option value="residential">Residential Plot</option>
+                      <option value="commercial">Commercial Plot</option>
+                      <option value="industrial">Industrial Plot</option>
+                      <option value="agricultural">Agricultural Land</option>
+                      <option value="sez">SEZ Plot</option>
+                      <option value="mixed-use">Mixed-Use Land</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Ownership Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Ownership Type *</label>
+                      <select
+                        value={formData.ownershipType}
+                        onChange={(e) => setFormData({ ...formData, ownershipType: e.target.value as any })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="freehold">Freehold</option>
+                        <option value="leasehold">Leasehold</option>
+                      </select>
+                    </div>
+
+                    {/* Legal Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Legal Status *</label>
+                      <select
+                        value={formData.legalStatus}
+                        onChange={(e) => setFormData({ ...formData, legalStatus: e.target.value as any })}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="clear-title">Clear Title</option>
+                        <option value="litigated">Litigated</option>
+                        <option value="rera-approved">RERA Approved</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Layout Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Layout Status *</label>
+                    <select
+                      value={formData.layoutStatus}
+                      onChange={(e) => setFormData({ ...formData, layoutStatus: e.target.value as any })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                     >
-                      Independent Plot
-                    </button>
+                      <option value="approved-municipal">Approved (Municipal)</option>
+                      <option value="approved-rera">Approved (RERA)</option>
+                      <option value="unapproved">Unapproved</option>
+                      <option value="gated-community">Gated Community</option>
+                    </select>
+                  </div>
+
+                  {/* Plot Area with Unit */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Plot Area *</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={formData.plotArea}
+                        onChange={(e) => setFormData({ ...formData, plotArea: e.target.value })}
+                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                        placeholder="Enter plot area"
+                      />
+                      <select
+                        value={formData.plotAreaUnit}
+                        onChange={(e) => setFormData({ ...formData, plotAreaUnit: e.target.value as any })}
+                        className="w-32 px-3 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="sqft">Sq.Ft</option>
+                        <option value="sqm">Sq.M</option>
+                        <option value="yards">Yards</option>
+                        <option value="acres">Acres</option>
+                        <option value="hectares">Hectares</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Zoning Classification - Multi-select */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Zoning Classification</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: 'approved-residential', label: 'Residential' },
+                        { value: 'approved-commercial', label: 'Commercial' },
+                        { value: 'approved-industrial', label: 'Industrial' },
+                        { value: 'agricultural', label: 'Agricultural' },
+                        { value: 'it-sez', label: 'IT/SEZ' },
+                        { value: 'mixed-use-approved', label: 'Mixed-Use' },
+                      ].map((zone) => (
+                        <button
+                          key={zone.value}
+                          type="button"
+                          onClick={() => {
+                            const current = formData.zoningClassification;
+                            const newZoning = current.includes(zone.value)
+                              ? current.filter(z => z !== zone.value)
+                              : [...current, zone.value];
+                            setFormData({ ...formData, zoningClassification: newZoning });
+                          }}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                            formData.zoningClassification.includes(zone.value)
+                              ? 'bg-green-600 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {zone.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Road Access */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Road Access</label>
+                    <input
+                      type="text"
+                      value={formData.roadAccess}
+                      onChange={(e) => setFormData({ ...formData, roadAccess: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      placeholder="e.g., Highway facing, 4-lane road, Internal road"
+                    />
+                  </div>
+
+                  {/* Land Amenities - Checkboxes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Land Features & Amenities</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <label className="flex items-center gap-2 cursor-pointer p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300">
+                        <input
+                          type="checkbox"
+                          checked={formData.boundaryWall}
+                          onChange={(e) => setFormData({ ...formData, boundaryWall: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Boundary Wall</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300">
+                        <input
+                          type="checkbox"
+                          checked={formData.waterConnection}
+                          onChange={(e) => setFormData({ ...formData, waterConnection: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Water Connection</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300">
+                        <input
+                          type="checkbox"
+                          checked={formData.electricityConnection}
+                          onChange={(e) => setFormData({ ...formData, electricityConnection: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Electricity</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300">
+                        <input
+                          type="checkbox"
+                          checked={formData.cornerPlot}
+                          onChange={(e) => setFormData({ ...formData, cornerPlot: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Corner Plot</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300">
+                        <input
+                          type="checkbox"
+                          checked={formData.gatedSecurity}
+                          onChange={(e) => setFormData({ ...formData, gatedSecurity: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Gated Security</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}

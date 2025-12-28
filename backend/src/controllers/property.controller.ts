@@ -92,7 +92,21 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       sort = '-publishedAt',
       search,
       q, // Support both 'search' and 'q' parameters
-      applyAffordability // New parameter to enable affordability filtering
+      applyAffordability, // New parameter to enable affordability filtering
+      // Land/Plot specific filters
+      plotSubType,
+      ownershipType,
+      legalStatus,
+      layoutStatus,
+      zoningClassification, // comma-separated values for multi-select
+      boundaryWall,
+      waterConnection,
+      electricityConnection,
+      cornerPlot,
+      gatedSecurity,
+      minPlotArea,
+      maxPlotArea,
+      areaUnit
     } = req.query;
     
     // Debug logging
@@ -166,6 +180,64 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     }
     if (propertyType) query.propertyType = propertyType;
     if (listingType) query.listingType = listingType;
+    
+    // Land/Plot specific filters (only apply when propertyType is 'plot')
+    if (propertyType === 'plot' || plotSubType || ownershipType || legalStatus || layoutStatus || zoningClassification) {
+      if (plotSubType) {
+        query['landDetails.plotSubType'] = plotSubType;
+        logger.info(`🏞️ Plot sub-type filter: ${plotSubType}`);
+      }
+      if (ownershipType) {
+        query['landDetails.ownershipType'] = ownershipType;
+        logger.info(`📜 Ownership type filter: ${ownershipType}`);
+      }
+      if (legalStatus) {
+        query['landDetails.legalStatus'] = legalStatus;
+        logger.info(`⚖️ Legal status filter: ${legalStatus}`);
+      }
+      if (layoutStatus) {
+        query['landDetails.layoutStatus'] = layoutStatus;
+        logger.info(`📐 Layout status filter: ${layoutStatus}`);
+      }
+      if (zoningClassification) {
+        // Support multi-select: comma-separated values
+        const zoningValues = (zoningClassification as string).split(',').map(v => v.trim());
+        query['landDetails.zoningClassification'] = { $in: zoningValues };
+        logger.info(`🏗️ Zoning classification filter: ${zoningValues.join(', ')}`);
+      }
+      // Boolean filters for land amenities
+      if (boundaryWall === 'true') {
+        query['landDetails.boundaryWall'] = true;
+        logger.info(`🧱 Boundary wall filter: true`);
+      }
+      if (waterConnection === 'true') {
+        query['landDetails.waterConnection'] = true;
+        logger.info(`💧 Water connection filter: true`);
+      }
+      if (electricityConnection === 'true') {
+        query['landDetails.electricityConnection'] = true;
+        logger.info(`⚡ Electricity connection filter: true`);
+      }
+      if (cornerPlot === 'true') {
+        query['landDetails.cornerPlot'] = true;
+        logger.info(`📍 Corner plot filter: true`);
+      }
+      if (gatedSecurity === 'true') {
+        query['landDetails.gatedSecurity'] = true;
+        logger.info(`🔒 Gated security filter: true`);
+      }
+      // Plot area range filter
+      if (minPlotArea || maxPlotArea) {
+        query['landDetails.plotArea'] = {};
+        if (minPlotArea) {
+          query['landDetails.plotArea'].$gte = Number(minPlotArea);
+        }
+        if (maxPlotArea) {
+          query['landDetails.plotArea'].$lte = Number(maxPlotArea);
+        }
+        logger.info(`📏 Plot area filter: ${minPlotArea || 'any'} - ${maxPlotArea || 'any'} ${areaUnit || 'sqft'}`);
+      }
+    }
     
     // Bedrooms: explicit filter > parsed from search
     if (bedrooms) {

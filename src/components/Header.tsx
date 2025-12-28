@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3, User, LogOut, ChevronDown, Clock } from 'lucide-react';
+import { Home, Building2, Menu, X, LogIn, UserPlus, LayoutDashboard, Shield, BarChart3, User, LogOut, ChevronDown, Clock, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -151,6 +151,14 @@ export default function Header() {
                           <Home className="inline h-4 w-4 mr-2" />
                           My Properties
                         </Link>
+                        <Link
+                          to="/crm"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Users className="inline h-4 w-4 mr-2" />
+                          CRM / Leads
+                        </Link>
                       </>
                     )}
                     {user?.role === 'agent' && (
@@ -249,13 +257,22 @@ export default function Header() {
                 Contact
               </Link>
               {isAuthenticated && (user?.role === 'owner' || user?.role === 'agent') && (
-                <Link
-                  to="/add-property"
-                  className="bg-primary-600 text-white px-4 py-2 rounded-lg text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  + List Property
-                </Link>
+                <>
+                  <Link
+                    to="/crm"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    CRM / Leads
+                  </Link>
+                  <Link
+                    to="/add-property"
+                    className="bg-primary-600 text-white px-4 py-2 rounded-lg text-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    + List Property
+                  </Link>
+                </>
               )}
               
               {isAuthenticated ? (

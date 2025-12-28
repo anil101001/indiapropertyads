@@ -5,7 +5,24 @@ export interface IProperty extends Document {
   description: string;
   propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
   listingType: 'sale' | 'rent';
-  plotType?: 'gated-community' | 'independent'; // Only for plots
+  plotType?: 'gated-community' | 'independent'; // Only for plots (legacy - use landDetails.layoutStatus instead)
+  
+  // Land/Plot Specific Details (required when propertyType is 'plot')
+  landDetails?: {
+    plotSubType: 'residential' | 'commercial' | 'industrial' | 'agricultural' | 'sez' | 'mixed-use';
+    zoningClassification: string[];  // Multi-select: 'approved-residential', 'approved-commercial', 'approved-industrial', 'agricultural', 'it-sez', 'mixed-use-approved'
+    layoutStatus: 'approved-municipal' | 'approved-rera' | 'unapproved' | 'gated-community';
+    ownershipType: 'freehold' | 'leasehold';
+    legalStatus: 'clear-title' | 'litigated' | 'rera-approved';
+    areaUnit: 'sqft' | 'sqm' | 'yards' | 'acres' | 'hectares';
+    plotArea: number; // Area in the selected unit
+    roadAccess?: string;  // e.g., "Highway facing", "4-lane road", "Internal road"
+    boundaryWall: boolean;
+    waterConnection: boolean;
+    electricityConnection: boolean;
+    cornerPlot?: boolean;
+    gatedSecurity?: boolean;
+  };
   
   // Vector Search (AI/ML)
   embedding?: number[]; // 1536-dimensional vector for semantic search
@@ -135,7 +152,69 @@ const PropertySchema = new Schema<IProperty>(
     plotType: {
       type: String,
       enum: ['gated-community', 'independent'],
-      required: false // Only required for plots
+      required: false // Legacy field - use landDetails.layoutStatus instead
+    },
+    
+    // Land/Plot Specific Details
+    landDetails: {
+      plotSubType: {
+        type: String,
+        enum: ['residential', 'commercial', 'industrial', 'agricultural', 'sez', 'mixed-use'],
+        required: function(this: any) { return this.propertyType === 'plot'; }
+      },
+      zoningClassification: {
+        type: [String],
+        enum: ['approved-residential', 'approved-commercial', 'approved-industrial', 'agricultural', 'it-sez', 'mixed-use-approved'],
+        default: []
+      },
+      layoutStatus: {
+        type: String,
+        enum: ['approved-municipal', 'approved-rera', 'unapproved', 'gated-community'],
+        required: function(this: any) { return this.propertyType === 'plot'; }
+      },
+      ownershipType: {
+        type: String,
+        enum: ['freehold', 'leasehold'],
+        required: function(this: any) { return this.propertyType === 'plot'; }
+      },
+      legalStatus: {
+        type: String,
+        enum: ['clear-title', 'litigated', 'rera-approved'],
+        required: function(this: any) { return this.propertyType === 'plot'; }
+      },
+      areaUnit: {
+        type: String,
+        enum: ['sqft', 'sqm', 'yards', 'acres', 'hectares'],
+        default: 'sqft'
+      },
+      plotArea: {
+        type: Number,
+        min: [1, 'Plot area must be at least 1']
+      },
+      roadAccess: {
+        type: String,
+        trim: true
+      },
+      boundaryWall: {
+        type: Boolean,
+        default: false
+      },
+      waterConnection: {
+        type: Boolean,
+        default: false
+      },
+      electricityConnection: {
+        type: Boolean,
+        default: false
+      },
+      cornerPlot: {
+        type: Boolean,
+        default: false
+      },
+      gatedSecurity: {
+        type: Boolean,
+        default: false
+      }
     },
     
     // Location
@@ -400,6 +479,12 @@ PropertySchema.index({ propertyType: 1, listingType: 1 });
 PropertySchema.index({ 'pricing.expectedPrice': 1 });
 PropertySchema.index({ status: 1, publishedAt: -1 });
 PropertySchema.index({ createdAt: -1 });
+
+// Land/Plot specific indexes
+PropertySchema.index({ 'landDetails.plotSubType': 1 });
+PropertySchema.index({ 'landDetails.ownershipType': 1 });
+PropertySchema.index({ 'landDetails.legalStatus': 1 });
+PropertySchema.index({ 'landDetails.layoutStatus': 1 });
 
 // Text search index
 PropertySchema.index({

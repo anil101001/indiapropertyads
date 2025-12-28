@@ -36,6 +36,20 @@ export default function PropertyListing() {
     maxPrice: '',
     bedrooms: '',
     applyAffordability: false, // New affordability filter
+    // Land/Plot specific filters
+    plotSubType: '',
+    ownershipType: '',
+    legalStatus: '',
+    layoutStatus: '',
+    zoningClassification: [] as string[],
+    boundaryWall: false,
+    waterConnection: false,
+    electricityConnection: false,
+    cornerPlot: false,
+    gatedSecurity: false,
+    minPlotArea: '',
+    maxPlotArea: '',
+    areaUnit: 'sqft',
   });
   const [sortBy, setSortBy] = useState('-publishedAt'); // Default: newest first
   const [showFilters, setShowFilters] = useState(false);
@@ -48,6 +62,11 @@ export default function PropertyListing() {
   // Helper to check if selected property type is commercial
   const isCommercialPropertyType = () => {
     return ['shop', 'office', 'warehouse', 'showroom'].includes(filters.propertyType);
+  };
+
+  // Helper to check if selected property type is land/plot
+  const isLandPlotPropertyType = () => {
+    return filters.propertyType === 'plot';
   };
 
   // Indian cities list (top 50 cities)
@@ -91,7 +110,7 @@ export default function PropertyListing() {
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, filters.applyAffordability, sortBy, user?.role]);
+  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, filters.applyAffordability, filters.plotSubType, filters.ownershipType, filters.legalStatus, filters.layoutStatus, filters.zoningClassification, filters.boundaryWall, filters.waterConnection, filters.electricityConnection, filters.cornerPlot, filters.gatedSecurity, filters.minPlotArea, filters.maxPlotArea, filters.areaUnit, sortBy, user?.role]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -111,6 +130,20 @@ export default function PropertyListing() {
         status: 'approved', // Only approved properties
         sort: sortBy,
         applyAffordability: filters.applyAffordability ? 'true' : undefined,
+        // Land/Plot specific filters
+        plotSubType: filters.plotSubType || undefined,
+        ownershipType: filters.ownershipType || undefined,
+        legalStatus: filters.legalStatus || undefined,
+        layoutStatus: filters.layoutStatus || undefined,
+        zoningClassification: filters.zoningClassification.length > 0 ? filters.zoningClassification.join(',') : undefined,
+        boundaryWall: filters.boundaryWall ? 'true' : undefined,
+        waterConnection: filters.waterConnection ? 'true' : undefined,
+        electricityConnection: filters.electricityConnection ? 'true' : undefined,
+        cornerPlot: filters.cornerPlot ? 'true' : undefined,
+        gatedSecurity: filters.gatedSecurity ? 'true' : undefined,
+        minPlotArea: filters.minPlotArea ? Number(filters.minPlotArea) : undefined,
+        maxPlotArea: filters.maxPlotArea ? Number(filters.maxPlotArea) : undefined,
+        areaUnit: filters.areaUnit || undefined,
       });
 
       if (response.success) {
@@ -129,6 +162,27 @@ export default function PropertyListing() {
     
     // Clear bedrooms filter when switching to commercial property type
     if (key === 'propertyType' && ['shop', 'office', 'warehouse', 'showroom'].includes(value)) {
+      newFilters.bedrooms = '';
+    }
+    
+    // Clear land-specific filters when switching away from plot
+    if (key === 'propertyType' && value !== 'plot') {
+      newFilters.plotSubType = '';
+      newFilters.ownershipType = '';
+      newFilters.legalStatus = '';
+      newFilters.layoutStatus = '';
+      newFilters.zoningClassification = [];
+      newFilters.boundaryWall = false;
+      newFilters.waterConnection = false;
+      newFilters.electricityConnection = false;
+      newFilters.cornerPlot = false;
+      newFilters.gatedSecurity = false;
+      newFilters.minPlotArea = '';
+      newFilters.maxPlotArea = '';
+    }
+    
+    // Clear bedrooms when switching to plot
+    if (key === 'propertyType' && value === 'plot') {
       newFilters.bedrooms = '';
     }
     
@@ -151,6 +205,20 @@ export default function PropertyListing() {
       maxPrice: '',
       bedrooms: '',
       applyAffordability: false,
+      // Reset land/plot filters
+      plotSubType: '',
+      ownershipType: '',
+      legalStatus: '',
+      layoutStatus: '',
+      zoningClassification: [],
+      boundaryWall: false,
+      waterConnection: false,
+      electricityConnection: false,
+      cornerPlot: false,
+      gatedSecurity: false,
+      minPlotArea: '',
+      maxPlotArea: '',
+      areaUnit: 'sqft',
     });
     setSearchInput('');
     setSortBy('-publishedAt');
@@ -165,7 +233,29 @@ export default function PropertyListing() {
     if (filters.minPrice || filters.maxPrice) count++;
     if (filters.bedrooms) count++;
     if (filters.applyAffordability) count++;
+    // Land/Plot specific filter counts
+    if (filters.plotSubType) count++;
+    if (filters.ownershipType) count++;
+    if (filters.legalStatus) count++;
+    if (filters.layoutStatus) count++;
+    if (filters.zoningClassification.length > 0) count++;
+    if (filters.boundaryWall) count++;
+    if (filters.waterConnection) count++;
+    if (filters.electricityConnection) count++;
+    if (filters.cornerPlot) count++;
+    if (filters.gatedSecurity) count++;
+    if (filters.minPlotArea || filters.maxPlotArea) count++;
     return count;
+  };
+
+  // Handle zoning classification multi-select toggle
+  const handleZoningToggle = (value: string) => {
+    const current = filters.zoningClassification;
+    const newZoning = current.includes(value)
+      ? current.filter(z => z !== value)
+      : [...current, value];
+    setFilters({ ...filters, zoningClassification: newZoning });
+    setPagination({ ...pagination, page: 1 });
   };
 
   return (
@@ -318,8 +408,8 @@ export default function PropertyListing() {
                   />
                 </div>
 
-                {/* Bedrooms - Only show for residential properties */}
-                {!isCommercialPropertyType() && (
+                {/* Bedrooms - Only show for residential properties (not commercial or plot) */}
+                {!isCommercialPropertyType() && !isLandPlotPropertyType() && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
                     <select
@@ -337,6 +427,196 @@ export default function PropertyListing() {
                   </div>
                 )}
               </div>
+
+              {/* Land/Plot Specific Filters - Only show when Plot/Land is selected */}
+              {isLandPlotPropertyType() && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="text-sm font-semibold text-green-800 mb-4 flex items-center gap-2">
+                    <span className="text-lg">🏞️</span> Land/Plot Specific Filters
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Plot Sub-Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Plot Type</label>
+                      <select
+                        value={filters.plotSubType}
+                        onChange={(e) => handleFilterChange('plotSubType', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="">All Plot Types</option>
+                        <option value="residential">Residential Plot</option>
+                        <option value="commercial">Commercial Plot</option>
+                        <option value="industrial">Industrial Plot</option>
+                        <option value="agricultural">Agricultural Land</option>
+                        <option value="sez">SEZ Plot</option>
+                        <option value="mixed-use">Mixed-Use Land</option>
+                      </select>
+                    </div>
+
+                    {/* Ownership Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ownership Type</label>
+                      <select
+                        value={filters.ownershipType}
+                        onChange={(e) => handleFilterChange('ownershipType', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="">Any Ownership</option>
+                        <option value="freehold">Freehold</option>
+                        <option value="leasehold">Leasehold</option>
+                      </select>
+                    </div>
+
+                    {/* Legal Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Legal Status</label>
+                      <select
+                        value={filters.legalStatus}
+                        onChange={(e) => handleFilterChange('legalStatus', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="">Any Status</option>
+                        <option value="clear-title">Clear Title</option>
+                        <option value="litigated">Litigated</option>
+                        <option value="rera-approved">RERA Approved</option>
+                      </select>
+                    </div>
+
+                    {/* Layout Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Layout Status</label>
+                      <select
+                        value={filters.layoutStatus}
+                        onChange={(e) => handleFilterChange('layoutStatus', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="">Any Layout</option>
+                        <option value="approved-municipal">Approved (Municipal)</option>
+                        <option value="approved-rera">Approved (RERA)</option>
+                        <option value="unapproved">Unapproved</option>
+                        <option value="gated-community">Gated Community</option>
+                      </select>
+                    </div>
+
+                    {/* Plot Area Range */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Min Plot Area</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.minPlotArea}
+                          onChange={(e) => handleFilterChange('minPlotArea', e.target.value)}
+                          className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                        />
+                        <select
+                          value={filters.areaUnit}
+                          onChange={(e) => handleFilterChange('areaUnit', e.target.value)}
+                          className="w-24 px-2 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                        >
+                          <option value="sqft">sq.ft</option>
+                          <option value="sqm">sq.m</option>
+                          <option value="yards">yards</option>
+                          <option value="acres">acres</option>
+                          <option value="hectares">ha</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Plot Area</label>
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPlotArea}
+                        onChange={(e) => handleFilterChange('maxPlotArea', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Zoning Classification - Multi-select */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Zoning Classification</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: 'approved-residential', label: 'Residential' },
+                        { value: 'approved-commercial', label: 'Commercial' },
+                        { value: 'approved-industrial', label: 'Industrial' },
+                        { value: 'agricultural', label: 'Agricultural' },
+                        { value: 'it-sez', label: 'IT/SEZ' },
+                        { value: 'mixed-use-approved', label: 'Mixed-Use' },
+                      ].map((zone) => (
+                        <button
+                          key={zone.value}
+                          type="button"
+                          onClick={() => handleZoningToggle(zone.value)}
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                            filters.zoningClassification.includes(zone.value)
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {zone.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Land Amenities - Checkboxes */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Amenities & Features</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.boundaryWall}
+                          onChange={(e) => setFilters({ ...filters, boundaryWall: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Boundary Wall</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.waterConnection}
+                          onChange={(e) => setFilters({ ...filters, waterConnection: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Water Connection</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.electricityConnection}
+                          onChange={(e) => setFilters({ ...filters, electricityConnection: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Electricity</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.cornerPlot}
+                          onChange={(e) => setFilters({ ...filters, cornerPlot: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Corner Plot</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.gatedSecurity}
+                          onChange={(e) => setFilters({ ...filters, gatedSecurity: e.target.checked })}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">Gated Security</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Affordability Filter - Only show for logged-in users */}
               {user && (

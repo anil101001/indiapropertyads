@@ -22,6 +22,8 @@ import BuyerDashboard from './pages/BuyerDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import CRMDashboard from './pages/CRMDashboard';
+import LeadDetails from './pages/LeadDetails';
 
 function App() {
   return (
@@ -76,6 +78,24 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['owner', 'agent']}>
                   <EditProperty />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* CRM Routes - Owner/Agent */}
+            <Route 
+              path="crm" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'agent']}>
+                  <CRMDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="crm/leads/:id" 
+              element={
+                <ProtectedRoute allowedRoles={['owner', 'agent']}>
+                  <LeadDetails />
                 </ProtectedRoute>
               } 
             />
