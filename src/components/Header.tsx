@@ -48,6 +48,15 @@ export default function Header() {
               <span>Properties</span>
             </Link>
             <Link
+              to="/projects"
+              className={`flex items-center space-x-1 ${
+                isActive('/projects') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
+              }`}
+            >
+              <Building2 className="h-4 w-4" />
+              <span>Projects</span>
+            </Link>
+            <Link
               to="/agent-dashboard"
               className={`flex items-center space-x-1 ${
                 isActive('/agent-dashboard') ? 'text-primary-600' : 'text-gray-700 hover:text-primary-600'
@@ -159,6 +168,14 @@ export default function Header() {
                           <Users className="inline h-4 w-4 mr-2" />
                           CRM / Leads
                         </Link>
+                        <Link
+                          to="/builder/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Building2 className="inline h-4 w-4 mr-2" />
+                          Builder Portal
+                        </Link>
                       </>
                     )}
                     {user?.role === 'agent' && (
@@ -264,6 +281,13 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     CRM / Leads
+                  </Link>
+                  <Link
+                    to="/builder/dashboard"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Builder Portal
                   </Link>
                   <Link
                     to="/add-property"

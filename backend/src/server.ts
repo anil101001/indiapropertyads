@@ -19,6 +19,11 @@ import analyticsRoutes from './routes/analytics.routes'; // Conversation Analyti
 import searchRoutes from './routes/search.routes'; // Vector Search
 import { chatRoutes } from './ai-chat'; // AI Chat Module
 import crmRoutes from './routes/crm.routes'; // CRM Module
+import builderRoutes from './routes/builder.routes'; // Builder Module
+import projectRoutes from './routes/project.routes'; // Project Module
+import inventoryRoutes from './routes/inventory.routes'; // Inventory Module
+import pricingRoutes from './routes/pricing.routes'; // Pricing Module
+import documentRoutes from './routes/document.routes'; // Document Module
 
 // Load environment variables with explicit path
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -70,6 +75,11 @@ app.use(`${API_PREFIX}/analytics`, analyticsRoutes); // Conversation Analytics
 app.use(`${API_PREFIX}/search`, searchRoutes); // Vector Search
 app.use(`${API_PREFIX}/ai-chat`, chatRoutes); // AI Chat Module
 app.use(`${API_PREFIX}/crm`, crmRoutes); // CRM Module
+app.use(`${API_PREFIX}/builders`, builderRoutes); // Builder Module
+app.use(`${API_PREFIX}/projects`, projectRoutes); // Project Module
+app.use(`${API_PREFIX}/inventory`, inventoryRoutes); // Inventory Module
+app.use(`${API_PREFIX}/pricing`, pricingRoutes); // Pricing Module
+app.use(`${API_PREFIX}/documents`, documentRoutes); // Document Module
 
 // 404 Handler
 app.use((_req, res) => {
