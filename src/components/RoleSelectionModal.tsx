@@ -64,17 +64,17 @@ export default function RoleSelectionModal({ accessToken, refreshToken: _refresh
         },
       });
 
-      if (response.data.success) {
+      if (response.success) {
         // Use the new tokens from the response (they have the updated role)
-        const newAccessToken = response.data.data.tokens.accessToken;
-        const newRefreshToken = response.data.data.tokens.refreshToken;
+        const newAccessToken = response.data.tokens.accessToken;
+        const newRefreshToken = response.data.tokens.refreshToken;
         loginWithTokens(newAccessToken, newRefreshToken);
         onComplete();
       } else {
-        setError(response.data.message || 'Failed to set role');
+        setError(response.message || 'Failed to set role');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
