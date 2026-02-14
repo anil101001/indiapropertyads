@@ -312,6 +312,235 @@ export default function PropertyDetail() {
               </div>
             </div>
 
+            {/* Segment & Tags */}
+            {(property.segment || (property.tags && property.tags.length > 0)) && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Category & Tags</h2>
+                <div className="flex flex-wrap gap-2">
+                  {property.segment && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-semibold rounded-full capitalize">
+                      {property.segment}
+                    </span>
+                  )}
+                  {property.propertyCategory && (
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full capitalize">
+                      {property.propertyCategory}
+                    </span>
+                  )}
+                  {property.tags?.map((tag, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full capitalize">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Lease Details */}
+            {property.leaseDetails && (property.leaseDetails.tenantName || property.leaseDetails.tenantType || property.leaseDetails.currentMonthlyRent) && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Lease Details</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {property.leaseDetails.tenantName && (
+                    <div>
+                      <p className="text-sm text-gray-600">Tenant</p>
+                      <p className="font-semibold text-gray-900">{property.leaseDetails.tenantName}</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.tenantType && (
+                    <div>
+                      <p className="text-sm text-gray-600">Tenant Type</p>
+                      <p className="font-semibold text-gray-900 capitalize">{property.leaseDetails.tenantType.replace('-', ' ')}</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.currentMonthlyRent && (
+                    <div>
+                      <p className="text-sm text-gray-600">Monthly Rent</p>
+                      <p className="font-semibold text-gray-900">{formatPrice(property.leaseDetails.currentMonthlyRent)}</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.leaseTenure && (
+                    <div>
+                      <p className="text-sm text-gray-600">Lease Tenure</p>
+                      <p className="font-semibold text-gray-900">{property.leaseDetails.leaseTenure} years</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.lockInPeriod && (
+                    <div>
+                      <p className="text-sm text-gray-600">Lock-in Period</p>
+                      <p className="font-semibold text-gray-900">{property.leaseDetails.lockInPeriod} years</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.annualEscalation && (
+                    <div>
+                      <p className="text-sm text-gray-600">Annual Escalation</p>
+                      <p className="font-semibold text-gray-900">{property.leaseDetails.annualEscalation}%</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.occupancyStatus && (
+                    <div>
+                      <p className="text-sm text-gray-600">Occupancy</p>
+                      <p className="font-semibold text-gray-900 capitalize">{property.leaseDetails.occupancyStatus.replace('-', ' ')}</p>
+                    </div>
+                  )}
+                  {property.leaseDetails.tenantVerified && (
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium text-green-700">Tenant Verified</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Investment Metrics */}
+            {property.investmentMetrics && (property.investmentMetrics.rentalYield || property.investmentMetrics.capRate || property.investmentMetrics.roi) && (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  Investment Metrics
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {property.investmentMetrics.rentalYield != null && (
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600">Rental Yield</p>
+                      <p className="text-2xl font-bold text-green-600">{property.investmentMetrics.rentalYield}%</p>
+                    </div>
+                  )}
+                  {property.investmentMetrics.capRate != null && (
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600">Cap Rate</p>
+                      <p className="text-2xl font-bold text-green-600">{property.investmentMetrics.capRate}%</p>
+                    </div>
+                  )}
+                  {property.investmentMetrics.roi != null && (
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600">ROI</p>
+                      <p className="text-2xl font-bold text-green-600">{property.investmentMetrics.roi}%</p>
+                    </div>
+                  )}
+                  {property.investmentMetrics.expectedAppreciation != null && (
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600">Expected Appreciation</p>
+                      <p className="text-2xl font-bold text-green-600">{property.investmentMetrics.expectedAppreciation}%</p>
+                    </div>
+                  )}
+                  {property.investmentMetrics.assetGrade && (
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600">Asset Grade</p>
+                      <p className="text-2xl font-bold text-green-600">Grade {property.investmentMetrics.assetGrade}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Compliance & Certifications */}
+            {property.compliance && (property.compliance.reraApproved || property.compliance.reraNumber || property.compliance.environmentNOC || property.compliance.fireNOC) && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Compliance & Certifications</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {property.compliance.reraApproved && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">RERA Approved</p>
+                        {property.compliance.reraNumber && (
+                          <p className="text-xs text-green-600">{property.compliance.reraNumber}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {property.compliance.environmentNOC && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-800">Environment NOC</span>
+                    </div>
+                  )}
+                  {property.compliance.fireNOC && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-800">Fire NOC</span>
+                    </div>
+                  )}
+                  {property.compliance.ghmcPermission && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-800">GHMC Permission</span>
+                    </div>
+                  )}
+                  {property.compliance.sezApproval && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-800">SEZ Approval</span>
+                    </div>
+                  )}
+                  {property.compliance.gstReady && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-800">GST Ready</span>
+                    </div>
+                  )}
+                  {property.compliance.industrialZone && (
+                    <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg">
+                      <span className="text-sm font-medium text-yellow-800 capitalize">Industrial Zone: {property.compliance.industrialZone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Commercial Features */}
+            {property.commercialFeatures && (property.commercialFeatures.roadFacing || property.commercialFeatures.highFootfall || property.commercialFeatures.ceilingHeight || property.commercialFeatures.powerLoad) && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Commercial Features</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {property.commercialFeatures.roadFacing && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>Road Facing</span>
+                    </div>
+                  )}
+                  {property.commercialFeatures.highFootfall && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>High Footfall Area</span>
+                    </div>
+                  )}
+                  {property.commercialFeatures.truckAccess && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>Truck Access</span>
+                    </div>
+                  )}
+                  {property.commercialFeatures.loadingBay && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>Loading Bay</span>
+                    </div>
+                  )}
+                  {property.commercialFeatures.ceilingHeight && (
+                    <div>
+                      <p className="text-sm text-gray-600">Ceiling Height</p>
+                      <p className="font-semibold text-gray-900">{property.commercialFeatures.ceilingHeight} ft</p>
+                    </div>
+                  )}
+                  {property.commercialFeatures.powerLoad && (
+                    <div>
+                      <p className="text-sm text-gray-600">Power Load</p>
+                      <p className="font-semibold text-gray-900">{property.commercialFeatures.powerLoad} kVA</p>
+                    </div>
+                  )}
+                  {property.commercialFeatures.parkingSpaces && (
+                    <div>
+                      <p className="text-sm text-gray-600">Parking Spaces</p>
+                      <p className="font-semibold text-gray-900">{property.commercialFeatures.parkingSpaces}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Social Media Links */}
             {property.socialMedia && (property.socialMedia.youtube || property.socialMedia.facebook || property.socialMedia.instagram || property.socialMedia.twitter || property.socialMedia.website) && (
               <div className="bg-white rounded-xl shadow-lg p-6">

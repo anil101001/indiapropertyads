@@ -18,8 +18,8 @@ export default function EditProperty() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    propertyType: 'apartment' as 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom',
-    listingType: 'sale' as 'sale' | 'rent',
+    propertyType: 'apartment' as Property['propertyType'],
+    listingType: 'sale' as Property['listingType'],
     plotType: 'gated-community' as 'gated-community' | 'independent',
     fullAddress: '',
     city: '',
@@ -34,7 +34,7 @@ export default function EditProperty() {
     openParking: '0',
     floor: '',
     totalFloors: '',
-    propertyAge: '<1' as '<1' | '1-5' | '5-10' | '10+',
+    propertyAge: '<1' as Property['specs']['propertyAge'],
     furnishing: 'unfurnished' as 'unfurnished' | 'semi-furnished' | 'fully-furnished',
     possession: 'immediate' as 'immediate' | '1-month' | '3-months' | 'under-construction',
     expectedPrice: '',
@@ -65,7 +65,10 @@ export default function EditProperty() {
 
   // Helper to check if property is commercial
   const isCommercial = () => {
-    return ['shop', 'office', 'warehouse', 'showroom'].includes(formData.propertyType);
+    return ['shop', 'office', 'warehouse', 'showroom',
+      'co-working', 'commercial-building', 'it-park', 'industrial-shed', 'cold-storage',
+      'restaurant', 'clinic', 'hotel', 'educational'
+    ].includes(formData.propertyType);
   };
 
   // Amenities based on property type
@@ -398,16 +401,43 @@ export default function EditProperty() {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
                   >
                     <optgroup label="Residential">
-                      <option value="apartment">Apartment</option>
+                      <option value="apartment">Apartment / Flat</option>
                       <option value="villa">Villa</option>
                       <option value="independent-house">Independent House</option>
-                      <option value="plot">Plot/Land</option>
+                      <option value="row-house">Row House</option>
+                      <option value="duplex">Duplex</option>
+                      <option value="triplex">Triplex</option>
+                      <option value="builder-floor">Builder Floor</option>
+                      <option value="studio">Studio Apartment</option>
+                      <option value="serviced-apartment">Serviced Apartment</option>
+                      <option value="farmhouse">Farmhouse</option>
+                      <option value="vacation-home">Vacation Home</option>
                     </optgroup>
-                    <optgroup label="Commercial">
-                      <option value="shop">Shop</option>
+                    <optgroup label="Living">
+                      <option value="co-living">Co-living</option>
+                      <option value="pg">PG / Hostel</option>
+                      <option value="retirement-home">Retirement Home</option>
+                    </optgroup>
+                    <optgroup label="Land">
+                      <option value="plot">Plot / Land</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Office & Retail">
                       <option value="office">Office Space</option>
-                      <option value="warehouse">Warehouse</option>
+                      <option value="co-working">Co-working Space</option>
+                      <option value="shop">Retail Shop</option>
                       <option value="showroom">Showroom</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Industrial">
+                      <option value="warehouse">Warehouse / Godown</option>
+                      <option value="industrial-shed">Industrial Shed</option>
+                      <option value="cold-storage">Cold Storage</option>
+                      <option value="it-park">IT Park / SEZ</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Hospitality">
+                      <option value="restaurant">Restaurant / Cafe</option>
+                      <option value="hotel">Hotel / Lodge</option>
+                      <option value="clinic">Clinic / Hospital</option>
+                      <option value="educational">Educational Institute</option>
                     </optgroup>
                   </select>
                 </div>
@@ -421,6 +451,12 @@ export default function EditProperty() {
                   >
                     <option value="sale">Sale</option>
                     <option value="rent">Rent</option>
+                    <option value="lease">Lease</option>
+                    <option value="pre-leased">Pre-Leased</option>
+                    <option value="invest">Investment</option>
+                    <option value="fractional">Fractional Ownership</option>
+                    <option value="joint-venture">Joint Venture</option>
+                    <option value="auction">Auction</option>
                   </select>
                 </div>
               </div>

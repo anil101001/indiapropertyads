@@ -21,9 +21,16 @@ export interface Property {
   _id: string;
   title: string;
   description: string;
-  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
-  listingType: 'sale' | 'rent';
+  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom'
+    | 'row-house' | 'duplex' | 'triplex' | 'builder-floor' | 'studio' | 'serviced-apartment'
+    | 'farmhouse' | 'retirement-home' | 'co-living' | 'pg' | 'vacation-home'
+    | 'co-working' | 'commercial-building' | 'it-park' | 'industrial-shed' | 'cold-storage'
+    | 'restaurant' | 'clinic' | 'hotel' | 'educational';
+  listingType: 'sale' | 'rent' | 'lease' | 'pre-leased' | 'invest' | 'joint-venture' | 'fractional' | 'auction';
   plotType?: 'gated-community' | 'independent';
+  propertyCategory?: 'residential' | 'commercial' | 'land' | 'special';
+  segment?: 'affordable' | 'mid-range' | 'premium' | 'luxury' | 'ultra-luxury';
+  tags?: string[];
   landDetails?: LandDetails;
   address: {
     fullAddress: string;
@@ -31,9 +38,23 @@ export interface Property {
     state: string;
     pincode: string;
     landmark?: string;
+    country?: string;
+    locality?: string;
+    zone?: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+    nearbyLandmarks?: {
+      type: string;
+      name: string;
+      distance: string;
+    }[];
   };
   specs: {
     carpetArea: number;
+    builtUpArea?: number;
+    superBuiltUpArea?: number;
     bedrooms: number;
     bathrooms: number;
     balconies: number;
@@ -43,7 +64,7 @@ export interface Property {
     };
     floor?: number;
     totalFloors?: number;
-    propertyAge: '<1' | '1-5' | '5-10' | '10+';
+    propertyAge: '<1' | '1-5' | '5-10' | '10+' | 'new-launch' | 'under-construction' | 'ready-to-move';
     furnishing: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
     possession: 'immediate' | '1-month' | '3-months' | 'under-construction';
   };
@@ -53,6 +74,47 @@ export interface Property {
     priceNegotiable: boolean;
     maintenanceCharges?: number;
     securityDeposit?: number;
+    pricePerSqft?: number;
+    expectedRent?: number;
+  };
+  leaseDetails?: {
+    tenantName?: string;
+    tenantType?: 'bank' | 'nbfc' | 'automobile' | 'fmcg' | 'corporate-it' | 'retail-brand' | 'healthcare' | 'education' | 'government' | 'other';
+    leaseTenure?: number;
+    lockInPeriod?: number;
+    annualEscalation?: number;
+    currentMonthlyRent?: number;
+    leaseStartDate?: string;
+    leaseEndDate?: string;
+    tenantVerified?: boolean;
+    occupancyStatus?: 'occupied' | 'vacant' | 'partially-occupied';
+  };
+  investmentMetrics?: {
+    rentalYield?: number;
+    capRate?: number;
+    roi?: number;
+    expectedAppreciation?: number;
+    assetGrade?: 'A' | 'B' | 'C';
+  };
+  compliance?: {
+    reraApproved?: boolean;
+    reraNumber?: string;
+    ghmcPermission?: boolean;
+    industrialZone?: 'orange' | 'red' | 'green';
+    environmentNOC?: boolean;
+    fireNOC?: boolean;
+    sezApproval?: boolean;
+    gstReady?: boolean;
+  };
+  commercialFeatures?: {
+    roadFacing?: boolean;
+    highFootfall?: boolean;
+    truckAccess?: boolean;
+    loadingBay?: boolean;
+    ceilingHeight?: number;
+    powerLoad?: number;
+    floorCapacity?: number;
+    parkingSpaces?: number;
   };
   images: {
     url: string;
@@ -76,7 +138,7 @@ export interface Property {
     phone: string;
     role: string;
   };
-  status: 'draft' | 'pending-approval' | 'approved' | 'rejected' | 'sold' | 'rented';
+  status: 'draft' | 'pending-approval' | 'approved' | 'rejected' | 'sold' | 'rented' | 'leased';
   verified: boolean;
   stats: {
     views: number;
@@ -115,6 +177,24 @@ export interface PropertyFilters {
   minPlotArea?: number;
   maxPlotArea?: number;
   areaUnit?: string;
+  // New expanded filters
+  propertyCategory?: string;
+  segment?: string;
+  tags?: string; // comma-separated
+  locality?: string;
+  // Lease / Investment filters
+  tenantType?: string;
+  occupancyStatus?: string;
+  minRentalYield?: number;
+  maxRentalYield?: number;
+  assetGrade?: string;
+  // Compliance filters
+  reraApproved?: string;
+  // Commercial filters
+  roadFacing?: string;
+  highFootfall?: string;
+  truckAccess?: string;
+  loadingBay?: string;
 }
 
 export interface PropertyListResponse {

@@ -29,13 +29,23 @@ export default function PropertyListing() {
   });
   const [filters, setFilters] = useState({
     search: searchParams.get('q') || '', // Get search query from URL
-    propertyType: '',
+    propertyType: searchParams.get('propertyType') || '',
     listingType: searchParams.get('type') || '', // Get listing type from URL
     city: '',
     minPrice: '',
     maxPrice: '',
     bedrooms: '',
     applyAffordability: false, // New affordability filter
+    // Category & Segment
+    propertyCategory: searchParams.get('propertyCategory') || '',
+    segment: searchParams.get('segment') || '',
+    // Compliance
+    reraApproved: false,
+    // Commercial features
+    roadFacing: false,
+    highFootfall: false,
+    truckAccess: false,
+    loadingBay: false,
     // Land/Plot specific filters
     plotSubType: '',
     ownershipType: '',
@@ -61,7 +71,10 @@ export default function PropertyListing() {
 
   // Helper to check if selected property type is commercial
   const isCommercialPropertyType = () => {
-    return ['shop', 'office', 'warehouse', 'showroom'].includes(filters.propertyType);
+    return ['shop', 'office', 'warehouse', 'showroom',
+      'co-working', 'commercial-building', 'it-park', 'industrial-shed', 'cold-storage',
+      'restaurant', 'clinic', 'hotel', 'educational'
+    ].includes(filters.propertyType);
   };
 
   // Helper to check if selected property type is land/plot
@@ -110,7 +123,7 @@ export default function PropertyListing() {
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, filters.applyAffordability, filters.plotSubType, filters.ownershipType, filters.legalStatus, filters.layoutStatus, filters.zoningClassification, filters.boundaryWall, filters.waterConnection, filters.electricityConnection, filters.cornerPlot, filters.gatedSecurity, filters.minPlotArea, filters.maxPlotArea, filters.areaUnit, sortBy, user?.role]);
+  }, [pagination.page, filters.search, filters.city, filters.propertyType, filters.listingType, filters.minPrice, filters.maxPrice, filters.bedrooms, filters.applyAffordability, filters.propertyCategory, filters.segment, filters.reraApproved, filters.roadFacing, filters.highFootfall, filters.truckAccess, filters.loadingBay, filters.plotSubType, filters.ownershipType, filters.legalStatus, filters.layoutStatus, filters.zoningClassification, filters.boundaryWall, filters.waterConnection, filters.electricityConnection, filters.cornerPlot, filters.gatedSecurity, filters.minPlotArea, filters.maxPlotArea, filters.areaUnit, sortBy, user?.role]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -144,6 +157,14 @@ export default function PropertyListing() {
         minPlotArea: filters.minPlotArea ? Number(filters.minPlotArea) : undefined,
         maxPlotArea: filters.maxPlotArea ? Number(filters.maxPlotArea) : undefined,
         areaUnit: filters.areaUnit || undefined,
+        // New expanded filters
+        propertyCategory: filters.propertyCategory || undefined,
+        segment: filters.segment || undefined,
+        reraApproved: filters.reraApproved ? 'true' : undefined,
+        roadFacing: filters.roadFacing ? 'true' : undefined,
+        highFootfall: filters.highFootfall ? 'true' : undefined,
+        truckAccess: filters.truckAccess ? 'true' : undefined,
+        loadingBay: filters.loadingBay ? 'true' : undefined,
       });
 
       if (response.success) {
@@ -161,8 +182,22 @@ export default function PropertyListing() {
     const newFilters = { ...filters, [key]: value };
     
     // Clear bedrooms filter when switching to commercial property type
-    if (key === 'propertyType' && ['shop', 'office', 'warehouse', 'showroom'].includes(value)) {
+    if (key === 'propertyType' && ['shop', 'office', 'warehouse', 'showroom',
+      'co-working', 'commercial-building', 'it-park', 'industrial-shed', 'cold-storage',
+      'restaurant', 'clinic', 'hotel', 'educational'
+    ].includes(value)) {
       newFilters.bedrooms = '';
+    }
+    
+    // Clear commercial filters when switching to non-commercial
+    if (key === 'propertyType' && !['shop', 'office', 'warehouse', 'showroom',
+      'co-working', 'commercial-building', 'it-park', 'industrial-shed', 'cold-storage',
+      'restaurant', 'clinic', 'hotel', 'educational'
+    ].includes(value)) {
+      newFilters.roadFacing = false;
+      newFilters.highFootfall = false;
+      newFilters.truckAccess = false;
+      newFilters.loadingBay = false;
     }
     
     // Clear land-specific filters when switching away from plot
@@ -205,6 +240,16 @@ export default function PropertyListing() {
       maxPrice: '',
       bedrooms: '',
       applyAffordability: false,
+      // Category & Segment
+      propertyCategory: '',
+      segment: '',
+      // Compliance
+      reraApproved: false,
+      // Commercial features
+      roadFacing: false,
+      highFootfall: false,
+      truckAccess: false,
+      loadingBay: false,
       // Reset land/plot filters
       plotSubType: '',
       ownershipType: '',
@@ -245,6 +290,14 @@ export default function PropertyListing() {
     if (filters.cornerPlot) count++;
     if (filters.gatedSecurity) count++;
     if (filters.minPlotArea || filters.maxPlotArea) count++;
+    // New filter counts
+    if (filters.propertyCategory) count++;
+    if (filters.segment) count++;
+    if (filters.reraApproved) count++;
+    if (filters.roadFacing) count++;
+    if (filters.highFootfall) count++;
+    if (filters.truckAccess) count++;
+    if (filters.loadingBay) count++;
     return count;
   };
 
@@ -356,16 +409,43 @@ export default function PropertyListing() {
                   >
                     <option value="">All Types</option>
                     <optgroup label="Residential">
-                      <option value="apartment">Apartment</option>
+                      <option value="apartment">Apartment / Flat</option>
                       <option value="villa">Villa</option>
                       <option value="independent-house">Independent House</option>
-                      <option value="plot">Plot/Land</option>
+                      <option value="row-house">Row House</option>
+                      <option value="duplex">Duplex</option>
+                      <option value="triplex">Triplex</option>
+                      <option value="builder-floor">Builder Floor</option>
+                      <option value="studio">Studio Apartment</option>
+                      <option value="serviced-apartment">Serviced Apartment</option>
+                      <option value="farmhouse">Farmhouse</option>
+                      <option value="vacation-home">Vacation Home</option>
                     </optgroup>
-                    <optgroup label="Commercial">
-                      <option value="shop">Shop</option>
+                    <optgroup label="Living">
+                      <option value="co-living">Co-living</option>
+                      <option value="pg">PG / Hostel</option>
+                      <option value="retirement-home">Retirement Home</option>
+                    </optgroup>
+                    <optgroup label="Land">
+                      <option value="plot">Plot / Land</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Office & Retail">
                       <option value="office">Office Space</option>
-                      <option value="warehouse">Warehouse</option>
+                      <option value="co-working">Co-working Space</option>
+                      <option value="shop">Retail Shop</option>
                       <option value="showroom">Showroom</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Industrial">
+                      <option value="warehouse">Warehouse / Godown</option>
+                      <option value="industrial-shed">Industrial Shed</option>
+                      <option value="cold-storage">Cold Storage</option>
+                      <option value="it-park">IT Park / SEZ</option>
+                    </optgroup>
+                    <optgroup label="Commercial - Hospitality">
+                      <option value="restaurant">Restaurant / Cafe</option>
+                      <option value="hotel">Hotel / Lodge</option>
+                      <option value="clinic">Clinic / Hospital</option>
+                      <option value="educational">Educational Institute</option>
                     </optgroup>
                   </select>
                 </div>
@@ -381,6 +461,12 @@ export default function PropertyListing() {
                     <option value="">All Listings</option>
                     <option value="sale">For Sale</option>
                     <option value="rent">For Rent</option>
+                    <option value="lease">For Lease</option>
+                    <option value="pre-leased">Pre-Leased</option>
+                    <option value="invest">Investment</option>
+                    <option value="fractional">Fractional Ownership</option>
+                    <option value="joint-venture">Joint Venture</option>
+                    <option value="auction">Auction</option>
                   </select>
                 </div>
 
@@ -426,7 +512,83 @@ export default function PropertyListing() {
                     </select>
                   </div>
                 )}
+                {/* Segment Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segment</label>
+                  <select
+                    value={filters.segment}
+                    onChange={(e) => handleFilterChange('segment', e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">All Segments</option>
+                    <option value="affordable">Affordable</option>
+                    <option value="mid-range">Mid-Range</option>
+                    <option value="premium">Premium</option>
+                    <option value="luxury">Luxury</option>
+                    <option value="ultra-luxury">Ultra-Luxury</option>
+                  </select>
+                </div>
+
+                {/* RERA Approved */}
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 cursor-pointer px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-primary-300 w-full">
+                    <input
+                      type="checkbox"
+                      checked={filters.reraApproved}
+                      onChange={(e) => setFilters({ ...filters, reraApproved: e.target.checked })}
+                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-gray-700">RERA Approved Only</span>
+                  </label>
+                </div>
               </div>
+
+              {/* Commercial Feature Filters - Only show for commercial property types */}
+              {isCommercialPropertyType() && (
+                <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <h4 className="text-sm font-semibold text-orange-800 mb-3 flex items-center gap-2">
+                    <span className="text-lg">🏢</span> Commercial Features
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.roadFacing}
+                        onChange={(e) => setFilters({ ...filters, roadFacing: e.target.checked })}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-gray-700">Road Facing</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.highFootfall}
+                        onChange={(e) => setFilters({ ...filters, highFootfall: e.target.checked })}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-gray-700">High Footfall</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.truckAccess}
+                        onChange={(e) => setFilters({ ...filters, truckAccess: e.target.checked })}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-gray-700">Truck Access</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.loadingBay}
+                        onChange={(e) => setFilters({ ...filters, loadingBay: e.target.checked })}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-gray-700">Loading Bay</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               {/* Land/Plot Specific Filters - Only show when Plot/Land is selected */}
               {isLandPlotPropertyType() && (

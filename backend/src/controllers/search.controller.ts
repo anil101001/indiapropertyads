@@ -104,6 +104,30 @@ export const semanticSearch = async (req: AuthRequest, res: Response): Promise<v
         additionalFilters.listingType = filters.listingType;
       }
 
+      // New expanded filters
+      if (filters.propertyCategory) {
+        additionalFilters.propertyCategory = filters.propertyCategory;
+      }
+      if (filters.segment) {
+        additionalFilters.segment = filters.segment;
+      }
+      if (filters.tags) {
+        const tagValues = filters.tags.split(',').map((v: string) => v.trim());
+        additionalFilters.tags = { $in: tagValues };
+      }
+      if (filters.reraApproved === 'true') {
+        additionalFilters['compliance.reraApproved'] = true;
+      }
+      if (filters.tenantType) {
+        additionalFilters['leaseDetails.tenantType'] = filters.tenantType;
+      }
+      if (filters.roadFacing === 'true') {
+        additionalFilters['commercialFeatures.roadFacing'] = true;
+      }
+      if (filters.highFootfall === 'true') {
+        additionalFilters['commercialFeatures.highFootfall'] = true;
+      }
+
       // Only show approved properties to non-owners
       if (!req.user || req.user.role === 'buyer') {
         additionalFilters.status = 'approved';
@@ -188,6 +212,26 @@ async function fallbackTextSearch(req: AuthRequest, res: Response): Promise<void
       if (filters.maxPrice) {
         searchQuery['pricing.expectedPrice'].$lte = parseFloat(filters.maxPrice);
       }
+    }
+
+    // New expanded filters for fallback search
+    if (filters.propertyCategory) {
+      searchQuery.propertyCategory = filters.propertyCategory;
+    }
+    if (filters.segment) {
+      searchQuery.segment = filters.segment;
+    }
+    if (filters.propertyType) {
+      searchQuery.propertyType = filters.propertyType;
+    }
+    if (filters.listingType) {
+      searchQuery.listingType = filters.listingType;
+    }
+    if (filters.bedrooms) {
+      searchQuery['specs.bedrooms'] = parseInt(filters.bedrooms);
+    }
+    if (filters.reraApproved === 'true') {
+      searchQuery['compliance.reraApproved'] = true;
     }
 
     // Only show approved properties

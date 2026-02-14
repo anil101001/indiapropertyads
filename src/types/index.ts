@@ -14,8 +14,15 @@ export interface Property {
     };
   };
   type: 'residential' | 'commercial';
-  category: 'apartment' | 'villa' | 'shop' | 'office' | 'land' | 'house';
-  listingType: 'sale' | 'rent';
+  category: 'apartment' | 'villa' | 'shop' | 'office' | 'land' | 'house'
+    | 'row-house' | 'duplex' | 'triplex' | 'builder-floor' | 'studio' | 'serviced-apartment'
+    | 'farmhouse' | 'retirement-home' | 'co-living' | 'pg' | 'vacation-home'
+    | 'co-working' | 'commercial-building' | 'it-park' | 'industrial-shed' | 'cold-storage'
+    | 'restaurant' | 'clinic' | 'hotel' | 'educational';
+  listingType: 'sale' | 'rent' | 'lease' | 'pre-leased' | 'invest' | 'joint-venture' | 'fractional' | 'auction';
+  propertyCategory?: 'residential' | 'commercial' | 'land' | 'special';
+  segment?: 'affordable' | 'mid-range' | 'premium' | 'luxury' | 'ultra-luxury';
+  tags?: string[];
   features: {
     bedrooms?: number;
     bathrooms?: number;
@@ -31,7 +38,7 @@ export interface Property {
   videos?: string[];
   virtualTour?: string;
   agentId: string;
-  status: 'active' | 'sold' | 'rented' | 'pending' | 'inactive';
+  status: 'active' | 'sold' | 'rented' | 'leased' | 'pending' | 'inactive';
   aiScore?: number;
   aiValuation?: number;
   views: number;
@@ -129,7 +136,10 @@ export interface SearchHistory {
 export interface SearchFilters {
   type?: 'residential' | 'commercial';
   category?: string[];
-  listingType?: 'sale' | 'rent';
+  listingType?: 'sale' | 'rent' | 'lease' | 'pre-leased' | 'invest' | 'joint-venture' | 'fractional' | 'auction';
+  propertyCategory?: string;
+  segment?: string;
+  tags?: string[];
   priceRange?: {
     min: number;
     max: number;

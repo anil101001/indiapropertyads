@@ -106,7 +106,25 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
       gatedSecurity,
       minPlotArea,
       maxPlotArea,
-      areaUnit
+      areaUnit,
+      // New expanded filters
+      propertyCategory,
+      segment,
+      tags, // comma-separated
+      locality,
+      // Lease / Investment filters
+      tenantType,
+      occupancyStatus,
+      minRentalYield,
+      maxRentalYield,
+      assetGrade,
+      // Compliance filters
+      reraApproved,
+      // Commercial filters
+      roadFacing,
+      highFootfall,
+      truckAccess,
+      loadingBay
     } = req.query;
     
     // Debug logging
@@ -181,6 +199,27 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
     if (propertyType) query.propertyType = propertyType;
     if (listingType) query.listingType = listingType;
     
+    // New category, segment, tags, locality filters
+    if (propertyCategory) {
+      query.propertyCategory = propertyCategory;
+      logger.info(`🏷️ Property category filter: ${propertyCategory}`);
+    }
+    if (segment) {
+      query.segment = segment;
+      logger.info(`💎 Segment filter: ${segment}`);
+    }
+    if (tags) {
+      const tagValues = (tags as string).split(',').map(v => v.trim());
+      query.tags = { $in: tagValues };
+      logger.info(`🏷️ Tags filter: ${tagValues.join(', ')}`);
+    }
+    if (locality) {
+      const escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedLocality = escapeRegex(locality as string);
+      query['address.locality'] = new RegExp(escapedLocality, 'i');
+      logger.info(`📍 Locality filter: ${locality}`);
+    }
+    
     // Land/Plot specific filters (only apply when propertyType is 'plot')
     if (propertyType === 'plot' || plotSubType || ownershipType || legalStatus || layoutStatus || zoningClassification) {
       if (plotSubType) {
@@ -237,6 +276,54 @@ export const getProperties = async (req: AuthRequest, res: Response): Promise<vo
         }
         logger.info(`📏 Plot area filter: ${minPlotArea || 'any'} - ${maxPlotArea || 'any'} ${areaUnit || 'sqft'}`);
       }
+    }
+    
+    // Lease / Investment filters
+    if (tenantType) {
+      query['leaseDetails.tenantType'] = tenantType;
+      logger.info(`🏢 Tenant type filter: ${tenantType}`);
+    }
+    if (occupancyStatus) {
+      query['leaseDetails.occupancyStatus'] = occupancyStatus;
+      logger.info(`🔑 Occupancy status filter: ${occupancyStatus}`);
+    }
+    if (minRentalYield || maxRentalYield) {
+      query['investmentMetrics.rentalYield'] = {};
+      if (minRentalYield) {
+        query['investmentMetrics.rentalYield'].$gte = Number(minRentalYield);
+      }
+      if (maxRentalYield) {
+        query['investmentMetrics.rentalYield'].$lte = Number(maxRentalYield);
+      }
+      logger.info(`📈 Rental yield filter: ${minRentalYield || 'any'} - ${maxRentalYield || 'any'}%`);
+    }
+    if (assetGrade) {
+      query['investmentMetrics.assetGrade'] = assetGrade;
+      logger.info(`🏅 Asset grade filter: ${assetGrade}`);
+    }
+    
+    // Compliance filters
+    if (reraApproved === 'true') {
+      query['compliance.reraApproved'] = true;
+      logger.info(`✅ RERA approved filter: true`);
+    }
+    
+    // Commercial feature filters
+    if (roadFacing === 'true') {
+      query['commercialFeatures.roadFacing'] = true;
+      logger.info(`🛣️ Road facing filter: true`);
+    }
+    if (highFootfall === 'true') {
+      query['commercialFeatures.highFootfall'] = true;
+      logger.info(`👥 High footfall filter: true`);
+    }
+    if (truckAccess === 'true') {
+      query['commercialFeatures.truckAccess'] = true;
+      logger.info(`🚛 Truck access filter: true`);
+    }
+    if (loadingBay === 'true') {
+      query['commercialFeatures.loadingBay'] = true;
+      logger.info(`📦 Loading bay filter: true`);
     }
     
     // Bedrooms: explicit filter > parsed from search
@@ -630,7 +717,9 @@ export const markPropertySold = async (req: AuthRequest, res: Response): Promise
       return;
     }
     
-    property.status = property.listingType === 'sale' ? 'sold' : 'rented';
+    property.status = property.listingType === 'sale' ? 'sold' 
+      : (property.listingType === 'lease' || property.listingType === 'pre-leased') ? 'leased' 
+      : 'rented';
     property.soldAt = new Date();
     
     await property.save();

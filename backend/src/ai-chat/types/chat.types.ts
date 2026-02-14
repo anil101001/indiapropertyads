@@ -34,11 +34,15 @@ export interface UserPreferences {
     min?: number;
     max?: number;
   };
-  propertyType?: 'apartment' | 'villa' | 'independent-house' | 'plot';
+  propertyType?: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom'
+    | 'row-house' | 'duplex' | 'triplex' | 'builder-floor' | 'studio' | 'serviced-apartment'
+    | 'farmhouse' | 'retirement-home' | 'co-living' | 'pg' | 'vacation-home'
+    | 'co-working' | 'commercial-building' | 'it-park' | 'industrial-shed' | 'cold-storage'
+    | 'restaurant' | 'clinic' | 'hotel' | 'educational';
   bedrooms?: number;
   amenities?: string[];
   furnishing?: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
-  listingType?: 'sale' | 'rent';
+  listingType?: 'sale' | 'rent' | 'lease' | 'pre-leased' | 'invest' | 'joint-venture' | 'fractional' | 'auction';
 }
 
 export interface ChatRequest {

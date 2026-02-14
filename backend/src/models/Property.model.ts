@@ -3,9 +3,18 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IProperty extends Document {
   title: string;
   description: string;
-  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom';
-  listingType: 'sale' | 'rent';
+  propertyType: 'apartment' | 'villa' | 'independent-house' | 'plot' | 'shop' | 'office' | 'warehouse' | 'showroom'
+    | 'row-house' | 'duplex' | 'triplex' | 'builder-floor' | 'studio' | 'serviced-apartment'
+    | 'farmhouse' | 'retirement-home' | 'co-living' | 'pg' | 'vacation-home'
+    | 'co-working' | 'commercial-building' | 'it-park' | 'industrial-shed' | 'cold-storage'
+    | 'restaurant' | 'clinic' | 'hotel' | 'educational';
+  listingType: 'sale' | 'rent' | 'lease' | 'pre-leased' | 'invest' | 'joint-venture' | 'fractional' | 'auction';
   plotType?: 'gated-community' | 'independent'; // Only for plots (legacy - use landDetails.layoutStatus instead)
+  
+  // Category & Segment (new - optional for backward compatibility)
+  propertyCategory?: 'residential' | 'commercial' | 'land' | 'special';
+  segment?: 'affordable' | 'mid-range' | 'premium' | 'luxury' | 'ultra-luxury';
+  tags?: string[]; // Flexible tagging: e.g., ['waterfront', 'smart-home', 'green-building', 'student-housing']
   
   // Land/Plot Specific Details (required when propertyType is 'plot')
   landDetails?: {
@@ -43,11 +52,25 @@ export interface IProperty extends Document {
     state: string;
     pincode: string;
     landmark?: string;
+    country?: string;
+    locality?: string;
+    zone?: string; // e.g., 'East Zone', 'South Zone'
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+    nearbyLandmarks?: {
+      type: string; // e.g., 'highway', 'airport', 'metro', 'sez'
+      name: string;
+      distance: string; // e.g., '2 km'
+    }[];
   };
   
   // Specifications
   specs: {
     carpetArea: number; // in sqft
+    builtUpArea?: number; // in sqft
+    superBuiltUpArea?: number; // in sqft
     bedrooms: number;
     bathrooms: number;
     balconies: number;
@@ -57,7 +80,7 @@ export interface IProperty extends Document {
     };
     floor?: number;
     totalFloors?: number;
-    propertyAge: '<1' | '1-5' | '5-10' | '10+';
+    propertyAge: '<1' | '1-5' | '5-10' | '10+' | 'new-launch' | 'under-construction' | 'ready-to-move';
     furnishing: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
     possession: 'immediate' | '1-month' | '3-months' | 'under-construction';
   };
@@ -71,6 +94,55 @@ export interface IProperty extends Document {
     priceNegotiable: boolean;
     maintenanceCharges?: number;
     securityDeposit?: number;
+    pricePerSqft?: number;
+    expectedRent?: number; // Separate rent field for lease/rent listings
+  };
+  
+  // Lease Details (for pre-leased / lease listings)
+  leaseDetails?: {
+    tenantName?: string;
+    tenantType?: 'bank' | 'nbfc' | 'automobile' | 'fmcg' | 'corporate-it' | 'retail-brand' | 'healthcare' | 'education' | 'government' | 'other';
+    leaseTenure?: number; // years
+    lockInPeriod?: number; // years
+    annualEscalation?: number; // percentage
+    currentMonthlyRent?: number;
+    leaseStartDate?: Date;
+    leaseEndDate?: Date;
+    tenantVerified?: boolean;
+    occupancyStatus?: 'occupied' | 'vacant' | 'partially-occupied';
+  };
+  
+  // Investment Metrics (for investment / pre-leased listings)
+  investmentMetrics?: {
+    rentalYield?: number; // percentage
+    capRate?: number; // percentage
+    roi?: number; // percentage
+    expectedAppreciation?: number; // percentage
+    assetGrade?: 'A' | 'B' | 'C';
+  };
+  
+  // Compliance & Certifications
+  compliance?: {
+    reraApproved?: boolean;
+    reraNumber?: string;
+    ghmcPermission?: boolean;
+    industrialZone?: 'orange' | 'red' | 'green';
+    environmentNOC?: boolean;
+    fireNOC?: boolean;
+    sezApproval?: boolean;
+    gstReady?: boolean;
+  };
+  
+  // Commercial-Specific Features
+  commercialFeatures?: {
+    roadFacing?: boolean;
+    highFootfall?: boolean;
+    truckAccess?: boolean;
+    loadingBay?: boolean;
+    ceilingHeight?: number; // in feet
+    powerLoad?: number; // in kVA
+    floorCapacity?: number; // load bearing capacity
+    parkingSpaces?: number;
   };
   
   // Images
@@ -94,7 +166,7 @@ export interface IProperty extends Document {
   owner: mongoose.Types.ObjectId; // Reference to User
   
   // Status
-  status: 'draft' | 'pending-approval' | 'approved' | 'rejected' | 'sold' | 'rented';
+  status: 'draft' | 'pending-approval' | 'approved' | 'rejected' | 'sold' | 'rented' | 'leased';
   rejectionReason?: string;
   
   // Verification
@@ -141,18 +213,45 @@ const PropertySchema = new Schema<IProperty>(
     },
     propertyType: {
       type: String,
-      enum: ['apartment', 'villa', 'independent-house', 'plot', 'shop', 'office', 'warehouse', 'showroom'],
+      enum: [
+        // Residential (original)
+        'apartment', 'villa', 'independent-house', 'plot',
+        // Commercial (original)
+        'shop', 'office', 'warehouse', 'showroom',
+        // Residential (new)
+        'row-house', 'duplex', 'triplex', 'builder-floor', 'studio', 'serviced-apartment',
+        'farmhouse', 'retirement-home', 'co-living', 'pg', 'vacation-home',
+        // Commercial (new)
+        'co-working', 'commercial-building', 'it-park', 'industrial-shed', 'cold-storage',
+        'restaurant', 'clinic', 'hotel', 'educational'
+      ],
       required: [true, 'Property type is required']
     },
     listingType: {
       type: String,
-      enum: ['sale', 'rent'],
+      enum: ['sale', 'rent', 'lease', 'pre-leased', 'invest', 'joint-venture', 'fractional', 'auction'],
       required: [true, 'Listing type is required']
     },
     plotType: {
       type: String,
       enum: ['gated-community', 'independent'],
       required: false // Legacy field - use landDetails.layoutStatus instead
+    },
+    
+    // Category & Segment (new - optional for backward compatibility)
+    propertyCategory: {
+      type: String,
+      enum: ['residential', 'commercial', 'land', 'special'],
+      required: false
+    },
+    segment: {
+      type: String,
+      enum: ['affordable', 'mid-range', 'premium', 'luxury', 'ultra-luxury'],
+      required: false
+    },
+    tags: {
+      type: [String],
+      default: []
     },
     
     // Land/Plot Specific Details
@@ -239,7 +338,29 @@ const PropertySchema = new Schema<IProperty>(
         required: [true, 'Pincode is required'],
         match: [/^[1-9][0-9]{5}$/, 'Please provide a valid Indian pincode']
       },
-      landmark: String
+      landmark: String,
+      country: {
+        type: String,
+        default: 'India',
+        trim: true
+      },
+      locality: {
+        type: String,
+        trim: true
+      },
+      zone: {
+        type: String,
+        trim: true
+      },
+      coordinates: {
+        lat: Number,
+        lng: Number
+      },
+      nearbyLandmarks: [{
+        type: { type: String, trim: true },
+        name: { type: String, trim: true },
+        distance: { type: String, trim: true }
+      }]
     },
     
     // Specifications
@@ -280,11 +401,19 @@ const PropertySchema = new Schema<IProperty>(
           min: [0, 'Open parking cannot be negative']
         }
       },
+      builtUpArea: {
+        type: Number,
+        min: [0, 'Built-up area cannot be negative']
+      },
+      superBuiltUpArea: {
+        type: Number,
+        min: [0, 'Super built-up area cannot be negative']
+      },
       floor: Number,
       totalFloors: Number,
       propertyAge: {
         type: String,
-        enum: ['<1', '1-5', '5-10', '10+'],
+        enum: ['<1', '1-5', '5-10', '10+', 'new-launch', 'under-construction', 'ready-to-move'],
         required: [true, 'Property age is required']
       },
       furnishing: {
@@ -324,7 +453,74 @@ const PropertySchema = new Schema<IProperty>(
       securityDeposit: {
         type: Number,
         min: [0, 'Security deposit cannot be negative']
+      },
+      pricePerSqft: {
+        type: Number,
+        min: [0, 'Price per sqft cannot be negative']
+      },
+      expectedRent: {
+        type: Number,
+        min: [0, 'Expected rent cannot be negative']
       }
+    },
+    
+    // Lease Details (for pre-leased / lease listings)
+    leaseDetails: {
+      tenantName: { type: String, trim: true },
+      tenantType: {
+        type: String,
+        enum: ['bank', 'nbfc', 'automobile', 'fmcg', 'corporate-it', 'retail-brand', 'healthcare', 'education', 'government', 'other']
+      },
+      leaseTenure: { type: Number, min: 0 },
+      lockInPeriod: { type: Number, min: 0 },
+      annualEscalation: { type: Number, min: 0, max: 100 },
+      currentMonthlyRent: { type: Number, min: 0 },
+      leaseStartDate: Date,
+      leaseEndDate: Date,
+      tenantVerified: { type: Boolean, default: false },
+      occupancyStatus: {
+        type: String,
+        enum: ['occupied', 'vacant', 'partially-occupied']
+      }
+    },
+    
+    // Investment Metrics (for investment / pre-leased listings)
+    investmentMetrics: {
+      rentalYield: { type: Number, min: 0, max: 100 },
+      capRate: { type: Number, min: 0, max: 100 },
+      roi: { type: Number, min: 0 },
+      expectedAppreciation: { type: Number, min: 0 },
+      assetGrade: {
+        type: String,
+        enum: ['A', 'B', 'C']
+      }
+    },
+    
+    // Compliance & Certifications
+    compliance: {
+      reraApproved: { type: Boolean, default: false },
+      reraNumber: { type: String, trim: true },
+      ghmcPermission: { type: Boolean, default: false },
+      industrialZone: {
+        type: String,
+        enum: ['orange', 'red', 'green']
+      },
+      environmentNOC: { type: Boolean, default: false },
+      fireNOC: { type: Boolean, default: false },
+      sezApproval: { type: Boolean, default: false },
+      gstReady: { type: Boolean, default: false }
+    },
+    
+    // Commercial-Specific Features
+    commercialFeatures: {
+      roadFacing: { type: Boolean, default: false },
+      highFootfall: { type: Boolean, default: false },
+      truckAccess: { type: Boolean, default: false },
+      loadingBay: { type: Boolean, default: false },
+      ceilingHeight: { type: Number, min: 0 },
+      powerLoad: { type: Number, min: 0 },
+      floorCapacity: { type: Number, min: 0 },
+      parkingSpaces: { type: Number, min: 0 }
     },
     
     // Images
@@ -412,7 +608,7 @@ const PropertySchema = new Schema<IProperty>(
     // Status
     status: {
       type: String,
-      enum: ['draft', 'pending-approval', 'approved', 'rejected', 'sold', 'rented'],
+      enum: ['draft', 'pending-approval', 'approved', 'rejected', 'sold', 'rented', 'leased'],
       default: 'draft'
     },
     rejectionReason: String,
@@ -486,12 +682,24 @@ PropertySchema.index({ 'landDetails.ownershipType': 1 });
 PropertySchema.index({ 'landDetails.legalStatus': 1 });
 PropertySchema.index({ 'landDetails.layoutStatus': 1 });
 
+// New indexes for expanded fields
+PropertySchema.index({ propertyCategory: 1 });
+PropertySchema.index({ segment: 1 });
+PropertySchema.index({ tags: 1 });
+PropertySchema.index({ 'address.locality': 1 });
+PropertySchema.index({ 'address.coordinates': '2dsphere' });
+PropertySchema.index({ 'leaseDetails.tenantType': 1 });
+PropertySchema.index({ 'leaseDetails.occupancyStatus': 1 });
+PropertySchema.index({ 'investmentMetrics.rentalYield': 1 });
+PropertySchema.index({ 'compliance.reraApproved': 1 });
+
 // Text search index
 PropertySchema.index({
   title: 'text',
   description: 'text',
   'address.city': 'text',
-  'address.state': 'text'
+  'address.state': 'text',
+  'address.locality': 'text'
 });
 
 // Virtual for BHK configuration

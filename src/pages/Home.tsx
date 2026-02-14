@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, Building2, TrendingUp, Shield, Sparkles, MapPin, Home as HomeIcon, Store } from 'lucide-react';
+import { Search, Building2, TrendingUp, Shield, Sparkles, MapPin, Home as HomeIcon, Store, Warehouse, Key, Hotel } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Home() {
@@ -30,10 +30,14 @@ export default function Home() {
   ];
 
   const propertyTypes = [
-    { icon: <Building2 className="h-12 w-12" />, name: 'Apartments', count: '2,500+' },
-    { icon: <HomeIcon className="h-12 w-12" />, name: 'Villas', count: '850+' },
-    { icon: <Store className="h-12 w-12" />, name: 'Commercial', count: '1,200+' },
-    { icon: <Building2 className="h-12 w-12" />, name: 'Plots', count: '670+' },
+    { icon: <Building2 className="h-12 w-12" />, name: 'Apartments', count: '2,500+', link: '/properties?propertyType=apartment' },
+    { icon: <HomeIcon className="h-12 w-12" />, name: 'Villas & Houses', count: '850+', link: '/properties?propertyType=villa' },
+    { icon: <Store className="h-12 w-12" />, name: 'Offices & Shops', count: '1,200+', link: '/properties?propertyCategory=commercial' },
+    { icon: <MapPin className="h-12 w-12" />, name: 'Plots & Land', count: '670+', link: '/properties?propertyType=plot' },
+    { icon: <Warehouse className="h-12 w-12" />, name: 'Warehouses', count: '320+', link: '/properties?propertyType=warehouse' },
+    { icon: <TrendingUp className="h-12 w-12" />, name: 'Pre-Leased', count: '180+', link: '/properties?type=pre-leased' },
+    { icon: <Key className="h-12 w-12" />, name: 'Rental Homes', count: '1,800+', link: '/properties?type=rent' },
+    { icon: <Hotel className="h-12 w-12" />, name: 'Hospitality', count: '90+', link: '/properties?propertyType=hotel' },
   ];
 
   const cities = [
@@ -171,7 +175,7 @@ export default function Home() {
             {propertyTypes.map((type, index) => (
               <Link
                 key={index}
-                to={`/properties?category=${type.name.toLowerCase()}`}
+                to={type.link}
                 className="bg-gradient-to-br from-primary-50 to-primary-100 p-8 rounded-xl text-center hover:shadow-xl transition transform hover:-translate-y-2"
               >
                 <div className="flex justify-center text-primary-600 mb-4">{type.icon}</div>
