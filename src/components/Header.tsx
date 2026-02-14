@@ -330,6 +330,14 @@ export default function Header() {
                           Admin Panel
                         </Link>
                         <Link
+                          to="/admin-cockpit"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Users className="inline h-4 w-4 mr-2" />
+                          User Management
+                        </Link>
+                        <Link
                           to="/admin-pending-properties"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setShowUserMenu(false)}
@@ -450,9 +458,14 @@ export default function Header() {
                     </Link>
                   )}
                   {user?.role === 'admin' && (
-                    <Link to="/admin-dashboard" className="text-gray-700 hover:text-primary-600" onClick={() => setIsMenuOpen(false)}>
-                      Admin Dashboard
-                    </Link>
+                    <>
+                      <Link to="/admin-dashboard" className="px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md" onClick={() => setIsMenuOpen(false)}>
+                        Admin Dashboard
+                      </Link>
+                      <Link to="/admin-cockpit" className="px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md" onClick={() => setIsMenuOpen(false)}>
+                        User Management
+                      </Link>
+                    </>
                   )}
                   <button
                     onClick={() => { handleLogout(); setIsMenuOpen(false); }}

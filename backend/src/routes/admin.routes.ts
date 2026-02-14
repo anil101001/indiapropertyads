@@ -21,7 +21,7 @@ router.get('/users', listUsers);
 router.get('/users/:id', getUserDetail);
 router.patch('/users/:id', updateUser);
 
-// Super admin setup
+// Super admin setup (admin-only)
 router.post('/users/ensure-super-admin', ensureSuperAdmin);
 
 export default router;
