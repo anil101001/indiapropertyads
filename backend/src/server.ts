@@ -94,11 +94,36 @@ app.use((_req, res) => {
 // Error Handler (must be last)
 app.use(errorHandler);
 
+// Ensure super admin on startup
+const ensureSuperAdminOnStartup = async () => {
+  try {
+    const User = (await import('./models/User.model')).default;
+    const superAdminEmail = 'contact@azentiq.ai';
+    const user = await User.findOne({ email: superAdminEmail });
+    if (user && user.role !== 'admin') {
+      user.role = 'admin';
+      user.isActive = true;
+      user.verification.emailVerified = true;
+      await user.save();
+      logger.info(`✅ Super admin promoted: ${superAdminEmail}`);
+    } else if (user && user.role === 'admin') {
+      logger.info(`✅ Super admin already set: ${superAdminEmail}`);
+    } else {
+      logger.warn(`⚠️ Super admin user not found: ${superAdminEmail} — they need to register first`);
+    }
+  } catch (error) {
+    logger.error('Failed to ensure super admin:', error);
+  }
+};
+
 // Start Server
 const startServer = async () => {
   try {
     // Connect to Database
     await connectDatabase();
+    
+    // Promote super admin
+    await ensureSuperAdminOnStartup();
     
     // Start listening
     app.listen(PORT, () => {
