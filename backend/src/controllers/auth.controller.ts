@@ -255,6 +255,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     
+    // Check if user has a password (Google-only users won't)
+    if (!user.password) {
+      res.status(401).json({
+        success: false,
+        message: 'This account uses Google sign-in. Please use "Sign in with Google" instead.'
+      });
+      return;
+    }
+
     // Verify password
     const isPasswordValid = await user.comparePassword(password);
     
@@ -291,7 +300,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           role: user.role,
           name: user.profile.name,
           avatar: user.profile.avatar,
-          emailVerified: user.verification.emailVerified
+          emailVerified: user.verification.emailVerified,
+          profileComplete: user.profileComplete !== false
         },
         tokens: {
           accessToken,

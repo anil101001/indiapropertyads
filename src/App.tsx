@@ -36,6 +36,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import BuilderAnalytics from './pages/BuilderAnalytics';
 import DocumentManager from './pages/DocumentManager';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
 
 function App() {
   return (
@@ -234,6 +235,7 @@ function App() {
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />

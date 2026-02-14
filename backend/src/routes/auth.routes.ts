@@ -10,6 +10,7 @@ import {
   verifyResetToken,
   logout
 } from '../controllers/auth.controller';
+import { googleAuthRedirect, googleAuthCallback, completeProfile } from '../controllers/google-auth.controller';
 import { authRateLimiter } from '../middleware/rateLimiter';
 import { authenticate } from '../middleware/auth.middleware';
 
@@ -25,7 +26,12 @@ router.post('/forgot-password', authRateLimiter, forgotPassword);
 router.get('/verify-reset-token/:token', verifyResetToken);
 router.post('/reset-password/:token', resetPassword);
 
+// Google OAuth routes
+router.get('/google', googleAuthRedirect);
+router.get('/google/callback', googleAuthCallback);
+
 // Protected routes
 router.post('/logout', authenticate, logout);
+router.patch('/complete-profile', authenticate, completeProfile);
 
 export default router;

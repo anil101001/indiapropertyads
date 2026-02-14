@@ -3,8 +3,11 @@ import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
   email: string;
-  password: string;
-  phone: string;
+  password?: string;
+  phone?: string;
+  googleId?: string;
+  authProvider: 'local' | 'google';
+  profileComplete: boolean;
   role: 'buyer' | 'owner' | 'agent' | 'admin';
   profile: {
     name: string;
@@ -63,15 +66,27 @@ const UserSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
       select: false // Don't return password by default
     },
     phone: {
       type: String,
-      required: [true, 'Phone number is required'],
-      unique: true,
+      sparse: true,
       match: [/^[6-9]\d{9}$/, 'Phone number must be a valid 10-digit Indian number starting with 6-9']
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local'
+    },
+    profileComplete: {
+      type: Boolean,
+      default: true // true for local registration (they fill the form), false for new Google users
     },
     role: {
       type: String,
@@ -165,14 +180,15 @@ const UserSchema = new Schema<IUser>(
 
 // Index for faster queries
 UserSchema.index({ email: 1 });
-UserSchema.index({ phone: 1 });
+UserSchema.index({ phone: 1 }, { sparse: true });
+UserSchema.index({ googleId: 1 }, { sparse: true });
 UserSchema.index({ role: 1 });
 UserSchema.index({ createdAt: -1 });
 UserSchema.index({ 'verification.emailVerified': 1 });
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return next();
   }
   
