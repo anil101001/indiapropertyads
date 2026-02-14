@@ -24,6 +24,7 @@ import projectRoutes from './routes/project.routes'; // Project Module
 import inventoryRoutes from './routes/inventory.routes'; // Inventory Module
 import pricingRoutes from './routes/pricing.routes'; // Pricing Module
 import documentRoutes from './routes/document.routes'; // Document Module
+import adminRoutes from './routes/admin.routes'; // Admin User Management
 
 // Load environment variables with explicit path
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -80,6 +81,7 @@ app.use(`${API_PREFIX}/projects`, projectRoutes); // Project Module
 app.use(`${API_PREFIX}/inventory`, inventoryRoutes); // Inventory Module
 app.use(`${API_PREFIX}/pricing`, pricingRoutes); // Pricing Module
 app.use(`${API_PREFIX}/documents`, documentRoutes); // Document Module
+app.use(`${API_PREFIX}/admin`, adminRoutes); // Admin User Management
 
 // 404 Handler
 app.use((_req, res) => {

@@ -37,6 +37,8 @@ import BuilderAnalytics from './pages/BuilderAnalytics';
 import DocumentManager from './pages/DocumentManager';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import AdminCockpit from './pages/AdminCockpit';
+import AdminUserDetail from './pages/AdminUserDetail';
 
 function App() {
   return (
@@ -229,6 +231,22 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminInsights />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin-cockpit" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminCockpit />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin-cockpit/users/:id" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminUserDetail />
                 </ProtectedRoute>
               } 
             />

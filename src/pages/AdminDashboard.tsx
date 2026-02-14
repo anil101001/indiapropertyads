@@ -78,6 +78,13 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-4 md:mt-0 flex gap-3">
             <button
+              onClick={() => navigate('/admin-cockpit')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium shadow-lg"
+            >
+              <Users className="h-5 w-5" />
+              <span>User Management</span>
+            </button>
+            <button
               onClick={() => navigate('/admin-insights')}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-lg hover:from-primary-700 hover:to-purple-700 transition font-medium shadow-lg"
             >
