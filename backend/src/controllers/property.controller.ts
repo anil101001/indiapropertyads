@@ -648,7 +648,22 @@ export const updatePropertyStatus = async (req: AuthRequest, res: Response): Pro
   try {
     const { status, rejectionReason } = req.body;
     
-    const property = await Property.findById(req.params.id);
+    const updateFields: any = { status };
+    
+    if (status === 'approved') {
+      updateFields.verified = true;
+      updateFields.verifiedAt = new Date();
+      updateFields.verifiedBy = req.user?.userId;
+      updateFields.publishedAt = new Date();
+    } else if (status === 'rejected') {
+      updateFields.rejectionReason = rejectionReason;
+    }
+    
+    const property = await Property.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true, runValidators: false }
+    );
     
     if (!property) {
       res.status(404).json({
@@ -657,21 +672,6 @@ export const updatePropertyStatus = async (req: AuthRequest, res: Response): Pro
       });
       return;
     }
-    
-    property.status = status;
-    
-    if (status === 'approved') {
-      property.verified = true;
-      property.verifiedAt = new Date();
-      property.verifiedBy = req.user?.userId as any;
-      if (!property.publishedAt) {
-        property.publishedAt = new Date();
-      }
-    } else if (status === 'rejected') {
-      property.rejectionReason = rejectionReason;
-    }
-    
-    await property.save();
     
     logger.info(`Property status updated: ${property._id} to ${status} by ${req.user?.email}`);
     
@@ -682,7 +682,7 @@ export const updatePropertyStatus = async (req: AuthRequest, res: Response): Pro
     });
     
   } catch (error: any) {
-    logger.error('Update property status error:', error);
+    logger.error('Update property status error:', error.message, error.errors || '');
     res.status(500).json({
       success: false,
       message: 'Failed to update property status'
