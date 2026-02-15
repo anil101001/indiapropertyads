@@ -41,7 +41,7 @@ export default function Home() {
   ];
 
   const cities = [
-    { name: 'Hyderabad', properties: 50, image: 'https://images.unsplash.com/photo-1572883454114-efb8e5fd1c4c?w=400' },
+    { name: 'Hyderabad', properties: 50, image: 'https://images.unsplash.com/photo-1603813507806-0d4e5e5d3f1e?w=400' },
     { name: 'Bangalore', properties: 0, image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=400', comingSoon: true },
     { name: 'Mumbai', properties: 0, image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=400', comingSoon: true },
     { name: 'Chennai', properties: 0, image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400', comingSoon: true },
