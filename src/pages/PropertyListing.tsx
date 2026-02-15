@@ -31,7 +31,7 @@ export default function PropertyListing() {
     search: searchParams.get('q') || '', // Get search query from URL
     propertyType: searchParams.get('propertyType') || '',
     listingType: searchParams.get('type') || '', // Get listing type from URL
-    city: '',
+    city: searchParams.get('city') || '',
     minPrice: '',
     maxPrice: '',
     bedrooms: '',

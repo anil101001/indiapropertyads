@@ -41,10 +41,10 @@ export default function Home() {
   ];
 
   const cities = [
-    { name: 'Mumbai', properties: 5420, image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=400' },
-    { name: 'Bangalore', properties: 4850, image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=400' },
-    { name: 'Delhi NCR', properties: 6230, image: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=400' },
-    { name: 'Pune', properties: 3680, image: 'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=400' },
+    { name: 'Hyderabad', properties: 50, image: 'https://images.unsplash.com/photo-1572883454114-efb8e5fd1c4c?w=400' },
+    { name: 'Bangalore', properties: 0, image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=400', comingSoon: true },
+    { name: 'Mumbai', properties: 0, image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=400', comingSoon: true },
+    { name: 'Chennai', properties: 0, image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400', comingSoon: true },
   ];
 
   return (
@@ -198,24 +198,39 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {cities.map((city, index) => (
-              <Link
-                key={index}
-                to={`/properties?city=${city.name.toLowerCase()}`}
-                className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition"
-              >
-                <div className="aspect-w-16 aspect-h-12">
+            {cities.map((city: any, index: number) => (
+              city.comingSoon ? (
+                <div
+                  key={index}
+                  className="relative group overflow-hidden rounded-xl shadow-lg opacity-80"
+                >
+                  <img
+                    src={city.image}
+                    alt={city.name}
+                    className="w-full h-64 object-cover grayscale"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                    <h3 className="text-2xl font-bold text-white mb-1">{city.name}</h3>
+                    <span className="inline-block bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full w-fit">Coming Soon</span>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={index}
+                  to={`/properties?city=${city.name}`}
+                  className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition"
+                >
                   <img
                     src={city.image}
                     alt={city.name}
                     className="w-full h-64 object-cover group-hover:scale-110 transition duration-300"
                   />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-                  <h3 className="text-2xl font-bold text-white mb-1">{city.name}</h3>
-                  <p className="text-gray-200">{city.properties.toLocaleString()} Properties</p>
-                </div>
-              </Link>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                    <h3 className="text-2xl font-bold text-white mb-1">{city.name}</h3>
+                    <p className="text-gray-200">{city.properties}+ Properties</p>
+                  </div>
+                </Link>
+              )
             ))}
           </div>
         </div>
