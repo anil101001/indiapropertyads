@@ -973,7 +973,7 @@ export default function PropertyListing() {
                   )}
                   <div className="flex items-center gap-1">
                     <Maximize className="h-4 w-4" />
-                    <span className="text-sm">{property.specs.carpetArea} sqft</span>
+                    <span className="text-sm">{property.specs.carpetArea} {property.propertyType === 'plot' ? 'sq.yd' : 'sqft'}</span>
                   </div>
                 </div>
 
@@ -982,7 +982,7 @@ export default function PropertyListing() {
                     <p className="text-2xl font-bold text-primary-600">
                       {formatPrice(property.pricing.expectedPrice)}
                     </p>
-                    <p className="text-xs text-gray-500">₹{Math.round(property.pricing.expectedPrice / property.specs.carpetArea).toLocaleString()}/sqft</p>
+                    <p className="text-xs text-gray-500">₹{Math.round(property.pricing.expectedPrice / property.specs.carpetArea).toLocaleString()}/{property.propertyType === 'plot' ? 'sq.yd' : 'sqft'}</p>
                   </div>
                   <span className="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm">
                     {property.listingType === 'sale' ? 'For Sale' : 'For Rent'}

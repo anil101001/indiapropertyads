@@ -277,10 +277,10 @@ export default function EditProperty() {
         },
         specs: {
           carpetArea: Number(formData.carpetArea),
-          // For commercial properties, set bedrooms/bathrooms/balconies to 0
-          bedrooms: isCommercial() ? 0 : Number(formData.bedrooms),
-          bathrooms: isCommercial() ? 0 : Number(formData.bathrooms),
-          balconies: isCommercial() ? 0 : Number(formData.balconies),
+          // For commercial properties and plots, set bedrooms/bathrooms/balconies to 0
+          bedrooms: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.bedrooms),
+          bathrooms: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.bathrooms),
+          balconies: isCommercial() || formData.propertyType === 'plot' ? 0 : Number(formData.balconies),
           parking: {
             covered: Number(formData.coveredParking),
             open: Number(formData.openParking),
@@ -593,8 +593,8 @@ export default function EditProperty() {
                 </div>
               </div>
 
-              {/* Bedrooms, Bathrooms, Balconies - Only for residential properties */}
-              {!isCommercial() && (
+              {/* Bedrooms, Bathrooms, Balconies - Only for residential properties (not commercial or plot) */}
+              {!isCommercial() && formData.propertyType !== 'plot' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
@@ -673,7 +673,8 @@ export default function EditProperty() {
                 </div>
               </div>
 
-              {/* Floor Details */}
+              {/* Floor Details - Not for plots */}
+              {formData.propertyType !== 'plot' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Floor</label>
@@ -696,6 +697,7 @@ export default function EditProperty() {
                   />
                 </div>
               </div>
+              )}
 
               {/* Property Age */}
               <div>
@@ -712,7 +714,8 @@ export default function EditProperty() {
                 </select>
               </div>
 
-              {/* Furnishing Status */}
+              {/* Furnishing Status - Not for plots */}
+              {formData.propertyType !== 'plot' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Furnishing Status</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -732,6 +735,7 @@ export default function EditProperty() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Possession Status */}
               <div>

@@ -1016,8 +1016,8 @@ export default function AddProperty() {
                 </div>
               </div>
 
-              {/* Bedrooms, Bathrooms, Parking - Only for residential properties */}
-              {!isCommercial() && (
+              {/* Bedrooms, Bathrooms, Parking - Only for residential properties (not commercial or plot) */}
+              {!isCommercial() && formData.propertyType !== 'plot' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
@@ -1096,7 +1096,8 @@ export default function AddProperty() {
                 </div>
               </div>
 
-              {/* Furnishing */}
+              {/* Furnishing - Not for plots */}
+              {formData.propertyType !== 'plot' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Furnishing Status</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -1116,6 +1117,7 @@ export default function AddProperty() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Amenities */}
               <div>

@@ -90,7 +90,9 @@ export default function PropertyDetail() {
     );
   }
 
-  const pricePerSqft = Math.round(property.pricing.expectedPrice / property.specs.carpetArea);
+  const isPlot = property.propertyType === 'plot';
+  const areaUnit = isPlot ? 'sq.yd' : 'sqft';
+  const pricePerUnit = Math.round(property.pricing.expectedPrice / property.specs.carpetArea);
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % property.images.length);
@@ -192,7 +194,7 @@ export default function PropertyDetail() {
                   <span className="text-4xl font-bold text-primary-600">
                     {formatPrice(property.pricing.expectedPrice)}
                   </span>
-                  <span className="text-gray-500">₹{pricePerSqft.toLocaleString()}/sqft</span>
+                  <span className="text-gray-500">₹{pricePerUnit.toLocaleString()}/{areaUnit}</span>
                 </div>
                 {property.pricing.priceNegotiable && (
                   <span className="text-sm text-green-600">Price Negotiable</span>
@@ -263,7 +265,7 @@ export default function PropertyDetail() {
                   <div>
                     <p className="text-sm text-gray-600">Area</p>
                     <p className="font-semibold text-gray-900">
-                      {property.specs.carpetArea} sqft
+                      {property.specs.carpetArea} {areaUnit}
                     </p>
                   </div>
                 </div>
@@ -274,6 +276,8 @@ export default function PropertyDetail() {
                     <p className="font-semibold text-gray-900">{property.specs.parking.covered + property.specs.parking.open} Spaces</p>
                   </div>
                 </div>
+                {/* Furnishing - Not for plots */}
+                {!isPlot && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Home className="h-6 w-6 text-primary-600" />
                   <div>
@@ -281,6 +285,9 @@ export default function PropertyDetail() {
                     <p className="font-semibold text-gray-900 capitalize">{property.specs.furnishing}</p>
                   </div>
                 </div>
+                )}
+                {/* Floor - Not for plots */}
+                {!isPlot && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Building2 className="h-6 w-6 text-primary-600" />
                   <div>
@@ -290,6 +297,7 @@ export default function PropertyDetail() {
                     </p>
                   </div>
                 </div>
+                )}
               </div>
             </div>
 
